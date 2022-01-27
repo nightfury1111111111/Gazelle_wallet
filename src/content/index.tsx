@@ -1,6 +1,6 @@
 import ReactDOM from 'react-dom'
 // eslint-disable-next-line node/no-unpublished-import
-import 'tailwindcss/tailwind.css'
+// import '../styles/tailwind.css'
 
 import Content from './Content'
 
