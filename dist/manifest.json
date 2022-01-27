@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
-  "name": "Chrome Extension V3 Boilerplate",
-  "description": "Chrome Extension V3 Boilerplate Description",
+  "name": "Gazelle Wallet",
+  "description": "Gazelle Wallet - a wallet as fast as a gazelle",
   "version": "0.1",
   "background": {
     "service_worker": "sw.js"
