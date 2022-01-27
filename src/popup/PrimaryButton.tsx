@@ -4,7 +4,7 @@ type propType = {
 
 function PrimaryButton({ text }: propType) {
   return (
-    <button className="w-fit rounded-sm bg-orange-400 p-1 text-xl font-semibold">
+    <button className="w-fit rounded-sm bg-orange-400 p-1 px-2 text-xl font-light">
       {text}
     </button>
   )
