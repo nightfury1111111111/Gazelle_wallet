@@ -1,8 +1,4 @@
-# Chrome Extension V3 Boilerplate
-
-![build](https://github.com/chibat/chrome-extension-typescript-starter/workflows/build/badge.svg)
-
-Chrome Extension, TypeScript and Visual Studio Code
+# Gazelle Wallet
 
 ## Built With
 
