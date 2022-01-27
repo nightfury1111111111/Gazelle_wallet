@@ -3,7 +3,13 @@ import PrimaryButton from './PrimaryButton'
 const Popup = () => {
   return (
     <div className="popup-layout">
-      <h1 className="pt-4 text-center text-2xl ">Gazelle Wallet</h1>
+      <div className="flex justify-center">
+        <div className="flex flex-row">
+          <img src="./images/gazelle_icon.svg" alt="" />
+          <h1 className="ml-2 pt-4 text-2xl">Gazelle Wallet</h1>
+        </div>
+      </div>
+
       <div className="mx-auto mt-4 w-4/5 border-4 border-black"></div>
       <div className="flex h-48 flex-col items-center justify-center">
         <PrimaryButton text="Create new wallet" />
