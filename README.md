@@ -1,4 +1,6 @@
-# Gazelle Wallet
+# ![Gazelle Icon](readme_images/wallet_icon.svg) Gazelle Wallet
+
+![Gazelle Wallet](readme_images/wallet_first_screen.png)
 
 ## Built With
 
