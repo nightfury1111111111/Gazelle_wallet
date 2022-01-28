@@ -1,15 +1,17 @@
 type propType = {
   text: string
+  onClick?: () => void
 }
 
-function PrimaryButton({ text }: propType) {
+function PrimaryButton({ text, onClick }: propType) {
   return (
-    <button className="w-fit rounded-sm bg-orange-400 p-1 px-2 text-xl font-light">
+    <button
+      className="w-fit rounded-sm bg-orange-400 p-1 px-2 text-xl font-light"
+      onClick={onClick}
+    >
       {text}
     </button>
   )
 }
 
-// make root component exported to meet `isReactRefreshBoundary`
-// https://github.com/pmmmwh/react-refresh-webpack-plugin/blob/52cd3a7f2e594fce187d3f1e0c32d201da798376/lib/runtime/RefreshUtils.js#L185
 export default PrimaryButton
