@@ -9,7 +9,7 @@ type propType = {
 }
 
 function Screen1({ setSiteState, setWallet }: propType) {
-  function onClick() {
+  async function onClick() {
     const wallet = ethers.Wallet.createRandom()
     setWallet(wallet)
     setSiteState(1)

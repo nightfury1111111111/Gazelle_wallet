@@ -9,6 +9,12 @@ type propType = {
 }
 
 function Screen2({ setSiteState, wallet }: propType) {
+  async function onClick() {
+    const walletJson = await wallet.encrypt('pw')
+    chrome.storage.local.set({ gazelle_wallet: walletJson })
+    setSiteState(2)
+  }
+
   return (
     <div>
       <div className="text-xl">Your seedphrase is:</div>
@@ -19,10 +25,7 @@ function Screen2({ setSiteState, wallet }: propType) {
       </div>
 
       <div className="mt-8 flex flex-col items-center justify-center">
-        <PrimaryButton
-          text="Finish wallet creation"
-          onClick={() => setSiteState(2)}
-        />
+        <PrimaryButton text="Finish wallet creation" onClick={onClick} />
       </div>
     </div>
   )

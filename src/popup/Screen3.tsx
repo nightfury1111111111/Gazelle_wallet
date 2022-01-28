@@ -13,6 +13,13 @@ type propType = {
 function Screen3({ setSiteState, wallet }: propType) {
   // const publicAddress = '0x424242424242424242424242'
   const ETHBalance = '0.0032'
+
+  function onClickDestroyWallet() {
+    chrome.storage.local.remove(['gazelle_wallet'], function () {
+      setSiteState(0)
+    })
+  }
+
   return (
     <div>
       <div className="text-2xl font-bold">Public Address</div>
@@ -66,10 +73,7 @@ function Screen3({ setSiteState, wallet }: propType) {
       </div>
 
       <div className="mt-8 flex flex-row justify-center">
-        <SecondaryButton
-          text="Destroy wallet"
-          onClick={() => setSiteState(0)}
-        />
+        <SecondaryButton text="Destroy wallet" onClick={onClickDestroyWallet} />
       </div>
     </div>
   )

@@ -1,5 +1,5 @@
 import { ethers } from 'ethers'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
 import Screen1 from './Screen1'
 import Screen2 from './Screen2'
@@ -8,6 +8,24 @@ import Screen3 from './Screen3'
 function Popup() {
   const [siteState, setSiteState] = useState<number>(0)
   const [wallet, setWallet] = useState<ethers.Wallet | null>(null)
+
+  useEffect(() => {
+    const getStoredWallet = async () => {
+      chrome.storage.local.get(['gazelle_wallet'], async function (result) {
+        const walletJson = result['gazelle_wallet']
+        if (walletJson) {
+          setSiteState(2)
+          const walletTmp = await ethers.Wallet.fromEncryptedJson(
+            walletJson,
+            'pw',
+          )
+          setWallet(walletTmp)
+        }
+      })
+    }
+    // eslint-disable-next-line no-console
+    getStoredWallet().catch(console.error)
+  }, [])
 
   function Screen() {
     if (siteState == 0) {
