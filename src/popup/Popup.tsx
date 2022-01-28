@@ -1,3 +1,4 @@
+import { ethers } from 'ethers'
 import { useState } from 'react'
 
 import Screen1 from './Screen1'
@@ -5,16 +6,16 @@ import Screen2 from './Screen2'
 import Screen3 from './Screen3'
 
 function Popup() {
-  // const [walletExist, setWalletExist] = useState<boolean>(false)
   const [siteState, setSiteState] = useState<number>(0)
+  const [wallet, setWallet] = useState<ethers.Wallet | null>(null)
 
   function Screen() {
     if (siteState == 0) {
-      return <Screen1 setSiteState={setSiteState} />
-    } else if (siteState == 1) {
-      return <Screen2 setSiteState={setSiteState} />
-    } else if (siteState == 2) {
-      return <Screen3 setSiteState={setSiteState} />
+      return <Screen1 setSiteState={setSiteState} setWallet={setWallet} />
+    } else if (siteState == 1 && wallet) {
+      return <Screen2 setSiteState={setSiteState} wallet={wallet} />
+    } else if (siteState == 2 && wallet) {
+      return <Screen3 setSiteState={setSiteState} wallet={wallet} />
     } else {
       return <div>Error</div>
     }
@@ -36,6 +37,4 @@ function Popup() {
   )
 }
 
-// make root component exported to meet `isReactRefreshBoundary`
-// https://github.com/pmmmwh/react-refresh-webpack-plugin/blob/52cd3a7f2e594fce187d3f1e0c32d201da798376/lib/runtime/RefreshUtils.js#L185
 export default Popup

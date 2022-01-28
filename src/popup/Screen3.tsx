@@ -1,17 +1,24 @@
+import { ethers } from 'ethers'
+
+import truncateString from '../utils'
+
 import PrimaryButton from './PrimaryButton'
 import SecondaryButton from './SecondaryButton'
 
 type propType = {
   setSiteState: React.Dispatch<React.SetStateAction<number>>
+  wallet: ethers.Wallet
 }
 
-function Screen3({ setSiteState }: propType) {
-  const publicAddress = '0x424242424242424242424242'
+function Screen3({ setSiteState, wallet }: propType) {
+  // const publicAddress = '0x424242424242424242424242'
   const ETHBalance = '0.0032'
   return (
     <div>
       <div className="text-2xl font-bold">Public Address</div>
-      <div className="text-xl">{publicAddress}</div>
+      <div className="text-xl">
+        {truncateString(wallet.publicKey, 20, '...')}
+      </div>
       <div className="text-2xl font-bold">ETH Balance</div>
       <div className="text-xl">{ETHBalance}</div>
 
