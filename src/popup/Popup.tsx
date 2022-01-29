@@ -10,16 +10,22 @@ function Popup() {
   const [wallet, setWallet] = useState<ethers.Wallet | null>(null)
 
   useEffect(() => {
+    const provider = new ethers.providers.AlchemyProvider(
+      'rinkeby',
+      process.env.ALCHEMY_APIKEY,
+    )
+
     const getStoredWallet = async () => {
       chrome.storage.local.get(['gazelle_wallet'], async function (result) {
         const walletJson = result['gazelle_wallet']
         if (walletJson) {
           setSiteState(2)
-          const walletTmp = await ethers.Wallet.fromEncryptedJson(
-            walletJson,
-            'pw',
-          )
-          setWallet(walletTmp)
+          const wallet = await ethers.Wallet.fromEncryptedJson(walletJson, 'pw')
+
+          const connectedWallet = wallet.connect(provider)
+          setWallet(connectedWallet)
+          // eslint-disable-next-line no-console
+          console.log('Wallet Address: ', wallet.address)
         }
       })
     }
