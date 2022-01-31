@@ -1,6 +1,8 @@
 import { ethers } from 'ethers'
 import { useEffect, useState } from 'react'
 
+import config from '../config'
+
 import Screen1 from './Screen1'
 import Screen2 from './Screen2'
 import Screen3 from './Screen3'
@@ -10,11 +12,7 @@ function Home() {
   const [wallet, setWallet] = useState<ethers.Wallet | null>(null)
 
   useEffect(() => {
-    const provider = new ethers.providers.AlchemyProvider(
-      'rinkeby',
-      process.env.ALCHEMY_APIKEY,
-    )
-
+    const provider = new ethers.providers.JsonRpcProvider(config.providerURL)
     const getStoredWallet = async () => {
       chrome.storage.local.get(['gazelle_wallet'], async function (result) {
         const walletJson = result['gazelle_wallet']
