@@ -10,7 +10,12 @@ type propType = {
 
 function Screen2({ setSiteState, wallet }: propType) {
   async function onClick() {
-    const walletJson = await wallet.encrypt('pw')
+    const walletJson = await wallet.encrypt('pw', {
+      scrypt: {
+        // The number must be a power of 2 (default: 131072)
+        N: 64,
+      },
+    })
     chrome.storage.local.set({ gazelle_wallet: walletJson })
     setSiteState(2)
   }
