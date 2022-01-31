@@ -38,6 +38,7 @@ const config: webpack.Configuration = {
   },
   entry: {
     popup: path.join(srcDir, 'popup'),
+    home: path.join(srcDir, 'home'),
     options: path.join(srcDir, 'options'),
     background: getEntry('background'),
     content: getEntry('content'),
