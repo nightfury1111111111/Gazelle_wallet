@@ -1,11 +1,25 @@
 import { ethers } from 'ethers'
 import React from 'react'
+// import useDeepCompareEffect from 'use-deep-compare-effect'
 
+import { useIsMounted } from './useIsMounted'
 import useProvider from './useProvider'
+
+function hashcode(obj) {
+  let hc = 0
+  const chars = JSON.stringify(obj).replace(/\{|\"|\}|\:|,/g, '')
+  const len = chars.length
+  for (let i = 0; i < len; i++) {
+    // Bump 7 to larger prime number to increase uniqueness
+    hc += chars.charCodeAt(i) * 7
+  }
+  return hc
+}
 
 function useWallet(key: string) {
   const [wallet, setWallet] = React.useState<ethers.Wallet | null>(null)
   const provider = useProvider()
+  const isMounted = useIsMounted()
 
   React.useEffect(() => {
     console.log('restore wallet')
@@ -19,7 +33,10 @@ function useWallet(key: string) {
           )
 
           // const connectedWallet = wallet.connect(provider)
-          setWallet(_wallet)
+          if (isMounted.current) {
+            setWallet(_wallet)
+          }
+
           // eslint-disable-next-line no-console
           console.log('Wallet Address: ', _wallet.address)
         }
@@ -46,13 +63,17 @@ function useWallet(key: string) {
     storeWallet()
   }, [wallet])
 
+  // useDeepCompareEffect(() => {
   React.useEffect(() => {
+    console.log('use deep compare')
     console.log('connect provider to wallet')
     if (wallet !== null) {
       const connectedWallet = wallet.connect(provider)
+      console.log(hashcode(wallet))
+      console.log(hashcode(connectedWallet))
       setWallet(connectedWallet)
     }
-  }, [wallet, provider])
+  }, [provider])
 
   return [wallet, setWallet] as const
 }
