@@ -1,17 +1,18 @@
 import { ethers } from 'ethers'
 
+import useWallet from './Hooks/useWallet'
 import PrimaryButton from './PrimaryButton'
 ethers.Wallet.createRandom
 
 type propType = {
   setSiteState: React.Dispatch<React.SetStateAction<number>>
-  setWallet: React.Dispatch<React.SetStateAction<ethers.Wallet | null>>
 }
 
-function Screen1({ setSiteState, setWallet }: propType) {
+function Screen1({ setSiteState }: propType) {
+  const [, setWallet] = useWallet('gazelle_wallet')
   async function onClick() {
-    const wallet = ethers.Wallet.createRandom()
-    setWallet(wallet)
+    const _wallet = ethers.Wallet.createRandom()
+    setWallet(_wallet)
     setSiteState(1)
   }
 

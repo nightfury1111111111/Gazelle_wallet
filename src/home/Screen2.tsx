@@ -1,22 +1,15 @@
-import { ethers } from 'ethers'
-
+import useWallet from './Hooks/useWallet'
 import PrimaryButton from './PrimaryButton'
 import SeedPhraseLabel from './SeedphraseLabel'
 
 type propType = {
   setSiteState: React.Dispatch<React.SetStateAction<number>>
-  wallet: ethers.Wallet
 }
 
-function Screen2({ setSiteState, wallet }: propType) {
+function Screen2({ setSiteState }: propType) {
+  const [wallet] = useWallet('gazelle_wallet')
+
   async function onClick() {
-    const walletJson = await wallet.encrypt('pw', {
-      scrypt: {
-        // The number must be a power of 2 (default: 131072)
-        N: 64,
-      },
-    })
-    chrome.storage.local.set({ gazelle_wallet: walletJson })
     setSiteState(2)
   }
 
@@ -24,9 +17,12 @@ function Screen2({ setSiteState, wallet }: propType) {
     <div>
       <div className="text-xl">Your seedphrase is:</div>
       <div className="mt-2 grid grid-cols-2 gap-2 ">
-        {wallet.mnemonic.phrase.split(' ').map((word, index) => (
-          <SeedPhraseLabel text={(index + 1).toString() + ' ' + word} />
-        ))}
+        {wallet &&
+          wallet.mnemonic.phrase
+            .split(' ')
+            .map((word, index) => (
+              <SeedPhraseLabel text={(index + 1).toString() + ' ' + word} />
+            ))}
       </div>
 
       <div className="mt-8 flex flex-col items-center justify-center">
