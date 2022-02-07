@@ -14,7 +14,12 @@ function WalletCreationScreen1({ setSiteState }: propType) {
   const { setWallet } = useWallet() as WalletContextType
 
   async function onClick() {
-    const wallet = ethers.Wallet.createRandom()
+    let wallet
+    if (process.env.NODE_ENV === 'development' && process.env.MNEMONIC) {
+      wallet = ethers.Wallet.fromMnemonic(process.env.MNEMONIC)
+    } else {
+      wallet = ethers.Wallet.createRandom()
+    }
     setWallet(wallet)
     setSiteState(1)
   }

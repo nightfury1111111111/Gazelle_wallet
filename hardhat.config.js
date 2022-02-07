@@ -1,6 +1,9 @@
 /**
  * @type import('hardhat/config').HardhatUserConfig
  */
+
+require('dotenv').config()
+
 module.exports = {
   solidity: {
     version: '0.8.4',
@@ -16,8 +19,13 @@ module.exports = {
       chainId: 1337,
       mining: {
         auto: true,
-        interval: 10000,
+        interval: 5000,
       },
+      accounts: process.env.MNEMONIC
+        ? {
+            mnemonic: process.env.MNEMONIC,
+          }
+        : undefined,
       allowUnlimitedContractSize: true,
     },
   },
