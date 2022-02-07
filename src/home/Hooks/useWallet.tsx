@@ -1,11 +1,10 @@
 import { ethers } from 'ethers'
 import React from 'react'
 import { useContext, useEffect, useState } from 'react'
-// import useDeepCompareEffect from 'use-deep-compare-effect'
 
 import { WalletContext } from '../Contexts/WalletContext'
 
-// import useProvider from './useProvider'
+import useProvider from './useProvider'
 
 type PropType = {
   children: React.ReactNode
@@ -13,10 +12,9 @@ type PropType = {
 
 export const WalletProvider = ({ children }: PropType) => {
   const [wallet, setWallet] = useState<ethers.Wallet | undefined>(undefined)
-  // const provider = useProvider()
+  const provider = useProvider()
 
   useEffect(() => {
-    // console.log('restore wallet', key)
     const getStoredWallet = async () => {
       chrome.storage.local.get(['gazelle_wallet'], async function (result) {
         const walletJson = result['gazelle_wallet']
@@ -36,17 +34,11 @@ export const WalletProvider = ({ children }: PropType) => {
     getStoredWallet().catch(console.error)
   }, [])
 
-  // useDeepCompareEffect(() => {
   React.useEffect(() => {
-    // console.log('use deep compare')
-    // console.log('connect provider to wallet')
-    // if (wallet !== undefined) {
-    //   console.log('in connect provider: wallet not undefined')
-    //   const connectedWallet = wallet.connect(provider)
-    //   console.log('wallet old:', hashcode(wallet))
-    //   console.log('wallet new:', hashcode(connectedWallet))
-    //   setWallet(connectedWallet)
-    // }
+    if (wallet && wallet.provider === null) {
+      const connectedWallet = wallet.connect(provider)
+      setWallet(connectedWallet)
+    }
 
     const storeWallet = async () => {
       if (wallet !== undefined) {
@@ -62,9 +54,7 @@ export const WalletProvider = ({ children }: PropType) => {
     }
 
     storeWallet()
-  }, [wallet])
-
-  // return [wallet, setWallet] as const
+  }, [wallet, provider])
 
   return (
     <WalletContext.Provider value={{ wallet, setWallet }}>

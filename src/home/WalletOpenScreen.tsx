@@ -1,10 +1,10 @@
 import { BigNumber, ethers } from 'ethers'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
 import truncateString from '../utils'
 
-import useProvider from './Hooks/useProvider'
 import { useWallet } from './Hooks/useWallet'
+import MenuButton from './MenuButton'
 import PrimaryButton from './PrimaryButton'
 import SecondaryButton from './SecondaryButton'
 
@@ -18,25 +18,37 @@ function WalletOpenScreen({ setSiteState }: propType) {
   const [transactionAddress, setTransactionAddress] = useState<string>('')
   const [transactionETHAmount, setTransactionETHAmount] = useState<string>('0')
   const { wallet } = useWallet() as { wallet: ethers.Wallet }
-  const provider = useProvider()
+  const [menuState, setMenuState] = useState(1)
+  const [transactionStatus, setTransactionStatus] = useState(0)
 
-  const walletWithProvider = wallet.connect(provider)
-  walletWithProvider.provider.on('block', () => {
-    // eslint-disable-next-line no-console
-    console.log('New block was minted!')
-    walletWithProvider.provider
-      .getBalance(walletWithProvider.address)
-      .then((balance) => {
-        if (!balance.eq(ETHBalance)) {
-          setETHBalance(balance)
-        }
+  useEffect(() => {
+    if (transactionStatus >= 2) {
+      setTimeout(() => setTransactionStatus(0), 6000)
+    }
+  }, [transactionStatus])
+
+  useEffect(() => {
+    if (wallet && wallet.provider) {
+      //   console.log('handler set')
+      wallet.provider.once('block', (blockNumber) => {
+        // eslint-disable-next-line no-console
+        console.log('New block was minted!', blockNumber)
+        wallet.provider
+          .getBalance(wallet.address)
+          .then((balance) => {
+            if (!balance.eq(ETHBalance)) {
+              setETHBalance(balance)
+            }
+          })
+          // eslint-disable-next-line no-console
+          .catch(console.error)
       })
-      // eslint-disable-next-line no-console
-      .catch(console.error)
-  })
+    }
+  }, [wallet, ETHBalance])
 
   function onSubmitTransaction() {
     // Create a transaction object
+    setTransactionStatus(1)
     const tx = {
       to: transactionAddress,
       // Convert currency unit from ether to wei
@@ -45,14 +57,37 @@ function WalletOpenScreen({ setSiteState }: propType) {
     // eslint-disable-next-line no-console
     console.log(tx)
     // Send a transaction
-    if (walletWithProvider !== undefined) {
-      walletWithProvider.sendTransaction(tx).then((txObj) => {
-        // eslint-disable-next-line no-console
-        console.log('txHash', txObj.hash)
-        // => 0x9c172314a693b94853b49dc057cf1cb8e529f29ce0272f451eea8f5741aa9b58
-        // A transaction result can be checked in a etherscan with a transaction hash which can be obtained here.
-      })
+    if (wallet !== undefined) {
+      wallet
+        .sendTransaction(tx)
+        .then(async (txObj) => {
+          // eslint-disable-next-line no-console
+          console.log('txHash', txObj.hash)
+          txObj
+            .wait(3)
+            .then(() => {
+              setTransactionStatus(2)
+            })
+            .catch(() => {
+              setTransactionStatus(3)
+            })
+        })
+        .catch(() => {
+          setTransactionStatus(3)
+        })
     }
+  }
+
+  function TransactionStatus() {
+    if (transactionStatus == 0) {
+      return <></>
+    } else if (transactionStatus == 1) {
+      return <div className="mt-2 text-gray-400">Transaction pending</div>
+    } else if (transactionStatus == 2) {
+      return <div className="mt-2 text-green-400">Transaction successful</div>
+    } else if (transactionStatus == 3) {
+      return <div className="mt-2 text-red-400">Transaction failed</div>
+    } else return <div>Error</div>
   }
 
   function onDestroyWallet() {
@@ -67,6 +102,30 @@ function WalletOpenScreen({ setSiteState }: propType) {
       <div className="text-xl">{truncateString(wallet.address, 20, '...')}</div>
       <div className="text-2xl font-bold">ETH Balance</div>
       <div className="text-xl">{ethers.utils.formatEther(ETHBalance)}</div>
+
+      <div className="mt-8 flex flex-row justify-start">
+        <div>
+          <MenuButton
+            text="Send ETH"
+            isActive={menuState == 1}
+            onClick={() => setMenuState(1)}
+          />
+        </div>
+        <div className="ml-4">
+          <MenuButton
+            text="Past transaction"
+            isActive={menuState == 2}
+            onClick={() => setMenuState(2)}
+          />
+        </div>
+        <div className="ml-4">
+          <MenuButton
+            text="Assets"
+            isActive={menuState == 3}
+            onClick={() => setMenuState(3)}
+          />
+        </div>
+      </div>
 
       <div className="mt-8">
         <div className="text-3xl font-bold ">Send ETH</div>
@@ -108,6 +167,7 @@ function WalletOpenScreen({ setSiteState }: propType) {
             </div>
           </div>
         </form>
+        <TransactionStatus />
         <div className="mt-4 flex flex-col justify-items-start">
           <PrimaryButton
             text="Submit Transaction"
