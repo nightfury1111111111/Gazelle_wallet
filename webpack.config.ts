@@ -5,7 +5,7 @@ import path from 'path'
 
 import ReactRefreshWebpackPlugin from '@pmmmwh/react-refresh-webpack-plugin'
 import { CleanWebpackPlugin } from 'clean-webpack-plugin'
-import DotenvFlow from 'dotenv-flow-webpack'
+import Dotenv from 'dotenv-webpack'
 import webpack from 'webpack'
 
 const isDev = process.env.NODE_ENV !== 'production'
@@ -76,7 +76,7 @@ const config: webpack.Configuration = {
   // @ts-ignore
   plugins: [
     new CleanWebpackPlugin(),
-    new DotenvFlow(),
+    new Dotenv(),
     new webpack.EnvironmentPlugin({
       MV3_HOT_RELOAD_PORT: 7761,
     }),

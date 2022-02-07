@@ -1,24 +1,25 @@
+import { ethers } from 'ethers'
 import { useState } from 'react'
 
-import useWallet from './Hooks/useWallet'
-import Screen1 from './Screen1'
-import Screen2 from './Screen2'
-import Screen3 from './Screen3'
+import { useWallet } from './Hooks/useWallet'
+import WalletCreationScreen1 from './WalletCreationScreen1'
+import WalletCreationScreen2 from './WalletCreationScreen2'
+import WalletOpenScreen from './WalletOpenScreen'
 
 function Home() {
   const [siteState, setSiteState] = useState<number>(0)
-  // const [wallet, setWallet] = useState<ethers.Wallet | null>(null)
-
-  const [wallet, setWallet] = useWallet('gazelle_wallet')
+  const { wallet } = useWallet() as { wallet: ethers.Wallet }
 
   function Screen() {
+    if (wallet) {
+      return <WalletOpenScreen setSiteState={setSiteState} />
+    }
     if (siteState == 0) {
-      // walletDecrypted && FirstTimeWallet && xxx
-      return <Screen1 setSiteState={setSiteState} />
-    } else if (siteState == 1 && wallet) {
-      return <Screen2 setSiteState={setSiteState} />
-    } else if (siteState == 2 && wallet) {
-      return <Screen3 setSiteState={setSiteState} />
+      return <WalletCreationScreen1 setSiteState={setSiteState} />
+    } else if (siteState == 1) {
+      return <WalletCreationScreen2 setSiteState={setSiteState} />
+    } else if (siteState == 2) {
+      return <WalletOpenScreen setSiteState={setSiteState} />
     } else {
       return <div>Error</div>
     }

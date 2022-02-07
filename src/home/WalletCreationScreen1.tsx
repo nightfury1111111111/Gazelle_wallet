@@ -1,6 +1,8 @@
 import { ethers } from 'ethers'
+import React from 'react'
 
-import useWallet from './Hooks/useWallet'
+import { WalletContextType } from './Contexts/WalletContext'
+import { useWallet } from './Hooks/useWallet'
 import PrimaryButton from './PrimaryButton'
 ethers.Wallet.createRandom
 
@@ -8,11 +10,12 @@ type propType = {
   setSiteState: React.Dispatch<React.SetStateAction<number>>
 }
 
-function Screen1({ setSiteState }: propType) {
-  const [, setWallet] = useWallet('gazelle_wallet')
+function WalletCreationScreen1({ setSiteState }: propType) {
+  const { setWallet } = useWallet() as WalletContextType
+
   async function onClick() {
-    const _wallet = ethers.Wallet.createRandom()
-    setWallet(_wallet)
+    const wallet = ethers.Wallet.createRandom()
+    setWallet(wallet)
     setSiteState(1)
   }
 
@@ -23,4 +26,4 @@ function Screen1({ setSiteState }: propType) {
   )
 }
 
-export default Screen1
+export default WalletCreationScreen1

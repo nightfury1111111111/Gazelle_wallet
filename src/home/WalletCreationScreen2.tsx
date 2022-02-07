@@ -1,4 +1,5 @@
-import useWallet from './Hooks/useWallet'
+import { WalletContextType } from './Contexts/WalletContext'
+import { useWallet } from './Hooks/useWallet'
 import PrimaryButton from './PrimaryButton'
 import SeedPhraseLabel from './SeedphraseLabel'
 
@@ -6,8 +7,8 @@ type propType = {
   setSiteState: React.Dispatch<React.SetStateAction<number>>
 }
 
-function Screen2({ setSiteState }: propType) {
-  const [wallet] = useWallet('gazelle_wallet')
+function WalletCreationScreen2({ setSiteState }: propType) {
+  const { wallet } = useWallet() as WalletContextType
 
   async function onClick() {
     setSiteState(2)
@@ -21,7 +22,10 @@ function Screen2({ setSiteState }: propType) {
           wallet.mnemonic.phrase
             .split(' ')
             .map((word, index) => (
-              <SeedPhraseLabel text={(index + 1).toString() + ' ' + word} />
+              <SeedPhraseLabel
+                key={index}
+                text={(index + 1).toString() + ' ' + word}
+              />
             ))}
       </div>
 
@@ -32,4 +36,4 @@ function Screen2({ setSiteState }: propType) {
   )
 }
 
-export default Screen2
+export default WalletCreationScreen2

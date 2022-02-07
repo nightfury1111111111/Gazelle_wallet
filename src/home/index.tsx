@@ -4,10 +4,13 @@ import ReactDOM from 'react-dom'
 import '../styles/tailwind.css'
 
 import Home from './Home'
+import { WalletProvider } from './Hooks/useWallet'
 
 ReactDOM.render(
   <React.StrictMode>
-    <Home />
+    <WalletProvider>
+      <Home />
+    </WalletProvider>
   </React.StrictMode>,
   document.getElementById('root'),
 )
