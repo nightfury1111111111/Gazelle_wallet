@@ -127,7 +127,7 @@ function WalletOpenScreen() {
 
       <div className="mt-8">
         <div className="text-3xl font-bold ">Send ETH</div>
-        <form action="">
+        <form action="" className="w-3/5">
           <div>
             <label
               htmlFor="text"

@@ -2,28 +2,34 @@ import { useState } from 'react'
 
 import { WalletContextType } from './Contexts/WalletContext'
 import { useWallet } from './Hooks/useWallet'
+import LoadingSpinner from './LoadingSpinner'
 import WalletCreationScreen1 from './WalletCreationScreen1'
 import WalletCreationScreen2 from './WalletCreationScreen2'
 import WalletOpenScreen from './WalletOpenScreen'
 
 function Home() {
-  const { wallet } = useWallet() as WalletContextType
+  const { wallet, walletLoading } = useWallet() as WalletContextType
   const [walletCreationFinished, setWalletCreationFinished] =
-    useState<boolean>(false)
+    useState<boolean>(true)
 
   function Screen() {
-    if (wallet === undefined) {
-      setWalletCreationFinished(false)
-      return <WalletCreationScreen1 />
-    } else if (wallet && !walletCreationFinished) {
-      return (
-        <WalletCreationScreen2
-          setWalletCreationFinished={setWalletCreationFinished}
-        />
-      )
-    } else if (wallet && walletCreationFinished) {
-      return <WalletOpenScreen />
-    } else return <div>Error</div>
+    if (walletLoading) {
+      return <LoadingSpinner />
+    } else {
+      if (wallet === undefined) {
+        return <WalletCreationScreen1 />
+      } else if (wallet && !walletCreationFinished) {
+        return (
+          <WalletCreationScreen2
+            setWalletCreationFinished={setWalletCreationFinished}
+          />
+        )
+      } else if (wallet && walletCreationFinished) {
+        return <WalletOpenScreen />
+      } else {
+        return <div>Error</div>
+      }
+    }
   }
 
   return (
