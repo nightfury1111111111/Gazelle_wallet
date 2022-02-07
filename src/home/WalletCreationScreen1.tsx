@@ -6,11 +6,7 @@ import { useWallet } from './Hooks/useWallet'
 import PrimaryButton from './PrimaryButton'
 ethers.Wallet.createRandom
 
-type propType = {
-  setSiteState: React.Dispatch<React.SetStateAction<number>>
-}
-
-function WalletCreationScreen1({ setSiteState }: propType) {
+function WalletCreationScreen1() {
   const { setWallet } = useWallet() as WalletContextType
 
   async function onClick() {
@@ -21,7 +17,6 @@ function WalletCreationScreen1({ setSiteState }: propType) {
       wallet = ethers.Wallet.createRandom()
     }
     setWallet(wallet)
-    setSiteState(1)
   }
 
   return (

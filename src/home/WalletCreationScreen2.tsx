@@ -4,14 +4,14 @@ import PrimaryButton from './PrimaryButton'
 import SeedPhraseLabel from './SeedphraseLabel'
 
 type propType = {
-  setSiteState: React.Dispatch<React.SetStateAction<number>>
+  setWalletCreationFinished: React.Dispatch<React.SetStateAction<boolean>>
 }
 
-function WalletCreationScreen2({ setSiteState }: propType) {
+function WalletCreationScreen2({ setWalletCreationFinished }: propType) {
   const { wallet } = useWallet() as WalletContextType
 
   async function onClick() {
-    setSiteState(2)
+    setWalletCreationFinished(true)
   }
 
   return (

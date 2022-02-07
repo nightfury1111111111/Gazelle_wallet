@@ -1,28 +1,29 @@
-import { ethers } from 'ethers'
 import { useState } from 'react'
 
+import { WalletContextType } from './Contexts/WalletContext'
 import { useWallet } from './Hooks/useWallet'
 import WalletCreationScreen1 from './WalletCreationScreen1'
 import WalletCreationScreen2 from './WalletCreationScreen2'
 import WalletOpenScreen from './WalletOpenScreen'
 
 function Home() {
-  const [siteState, setSiteState] = useState<number>(0)
-  const { wallet } = useWallet() as { wallet: ethers.Wallet }
+  const { wallet } = useWallet() as WalletContextType
+  const [walletCreationFinished, setWalletCreationFinished] =
+    useState<boolean>(false)
 
   function Screen() {
-    if (wallet) {
-      return <WalletOpenScreen setSiteState={setSiteState} />
-    }
-    if (siteState == 0) {
-      return <WalletCreationScreen1 setSiteState={setSiteState} />
-    } else if (siteState == 1) {
-      return <WalletCreationScreen2 setSiteState={setSiteState} />
-    } else if (siteState == 2) {
-      return <WalletOpenScreen setSiteState={setSiteState} />
-    } else {
-      return <div>Error</div>
-    }
+    if (wallet === undefined) {
+      setWalletCreationFinished(false)
+      return <WalletCreationScreen1 />
+    } else if (wallet && !walletCreationFinished) {
+      return (
+        <WalletCreationScreen2
+          setWalletCreationFinished={setWalletCreationFinished}
+        />
+      )
+    } else if (wallet && walletCreationFinished) {
+      return <WalletOpenScreen />
+    } else return <div>Error</div>
   }
 
   return (

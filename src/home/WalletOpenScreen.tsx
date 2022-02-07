@@ -8,16 +8,14 @@ import MenuButton from './MenuButton'
 import PrimaryButton from './PrimaryButton'
 import SecondaryButton from './SecondaryButton'
 
-type propType = {
-  setSiteState: React.Dispatch<React.SetStateAction<number>>
-}
-
-function WalletOpenScreen({ setSiteState }: propType) {
-  // const publicAddress = '0x424242424242424242424242'
+function WalletOpenScreen() {
   const [ETHBalance, setETHBalance] = useState<BigNumber>(ethers.constants.Zero)
   const [transactionAddress, setTransactionAddress] = useState<string>('')
   const [transactionETHAmount, setTransactionETHAmount] = useState<string>('0')
-  const { wallet } = useWallet() as { wallet: ethers.Wallet }
+  const { wallet, setWallet } = useWallet() as {
+    wallet: ethers.Wallet
+    setWallet: React.Dispatch<React.SetStateAction<ethers.Wallet | undefined>>
+  }
   const [menuState, setMenuState] = useState(1)
   const [transactionStatus, setTransactionStatus] = useState(0)
 
@@ -92,7 +90,7 @@ function WalletOpenScreen({ setSiteState }: propType) {
 
   function onDestroyWallet() {
     chrome.storage.local.remove(['gazelle_wallet'], function () {
-      setSiteState(0)
+      setWallet(undefined)
     })
   }
 
