@@ -30,5 +30,11 @@
     "48": "/images/icons/icon48.png",
     "128": "/images/icons/icon128.png"
   },
-  "permissions": ["storage", "tabs"]
+  "permissions": ["storage", "tabs"],
+  "web_accessible_resources": [
+    {
+      "resources": ["/imgages/*"],
+      "matches": ["https://*"]
+    }
+  ]
 }

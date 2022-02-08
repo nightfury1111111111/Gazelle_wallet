@@ -19,6 +19,8 @@ function WalletOpenScreen() {
   const [menuState, setMenuState] = useState(1)
   const [transactionStatus, setTransactionStatus] = useState(0)
 
+  const yellow_stroke = chrome.runtime.getURL('images/yellow_stroke.svg')
+
   useEffect(() => {
     if (transactionStatus >= 2) {
       setTimeout(() => setTransactionStatus(0), 6000)
@@ -126,7 +128,13 @@ function WalletOpenScreen() {
       </div>
 
       <div className="mt-8">
-        <div className="text-3xl font-bold ">Send ETH</div>
+        <div
+          className="-ml-4 w-fit bg-cover bg-no-repeat"
+          style={{ backgroundImage: `url(${yellow_stroke})` }}
+        >
+          <span className="p-4 text-3xl">Send ETH</span>
+        </div>
+
         <form action="" className="w-3/5">
           <div>
             <label
