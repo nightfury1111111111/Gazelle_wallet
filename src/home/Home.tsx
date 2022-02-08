@@ -40,8 +40,8 @@ function Home() {
           <h1 className="ml-2 text-2xl">Gazelle Wallet</h1>
         </div>
       </div>
-      <div className="mx-auto mt-4 w-3/5 border-4 border-black"></div>
-      <div className="mx-auto mt-4 w-4/5">
+      <div className="mx-auto mt-4 w-4/5 border-4 border-black"></div>
+      <div className="mx-auto mt-4 w-3/5">
         <Screen />
       </div>
     </div>

@@ -4,9 +4,17 @@ import { useEffect, useState } from 'react'
 import truncateString from '../utils'
 
 import { useWallet } from './Hooks/useWallet'
-import MenuButton from './MenuButton'
 import PrimaryButton from './PrimaryButton'
 import SecondaryButton from './SecondaryButton'
+import TransactionStatusCard, {
+  TransactionStatus,
+} from './TransactionStatusCard'
+
+// enum TransactionStatus {
+//   pending = 1,
+//   confirmed,
+//   failed,
+// }
 
 function WalletOpenScreen() {
   const [ETHBalance, setETHBalance] = useState<BigNumber>(ethers.constants.Zero)
@@ -16,7 +24,7 @@ function WalletOpenScreen() {
     wallet: ethers.Wallet
     setWallet: React.Dispatch<React.SetStateAction<ethers.Wallet | undefined>>
   }
-  const [menuState, setMenuState] = useState(1)
+  // const [menuState, setMenuState] = useState(1)
   const [transactionStatus, setTransactionStatus] = useState(0)
 
   const yellow_stroke = chrome.runtime.getURL('images/yellow_stroke.svg')
@@ -78,18 +86,6 @@ function WalletOpenScreen() {
     }
   }
 
-  function TransactionStatus() {
-    if (transactionStatus == 0) {
-      return <></>
-    } else if (transactionStatus == 1) {
-      return <div className="mt-2 text-gray-400">Transaction pending</div>
-    } else if (transactionStatus == 2) {
-      return <div className="mt-2 text-green-400">Transaction successful</div>
-    } else if (transactionStatus == 3) {
-      return <div className="mt-2 text-red-400">Transaction failed</div>
-    } else return <div>Error</div>
-  }
-
   function onDestroyWallet() {
     chrome.storage.local.remove(['gazelle_wallet'], function () {
       setWallet(undefined)
@@ -98,12 +94,115 @@ function WalletOpenScreen() {
 
   return (
     <div>
-      <div className="text-2xl font-bold">Public Address</div>
-      <div className="text-xl">{truncateString(wallet.address, 20, '...')}</div>
-      <div className="text-2xl font-bold">ETH Balance</div>
-      <div className="text-xl">{ethers.utils.formatEther(ETHBalance)}</div>
+      <div className="flex flex-row justify-between align-middle">
+        <div>
+          <div className="text-2xl font-bold">Public Address</div>
+          <div className="text-xl">
+            {truncateString(wallet.address, 20, '...')}
+          </div>
+        </div>
+        <div className="">
+          <div className="text-2xl font-bold">ETH Balance</div>
+          <div className="text-xl">{ethers.utils.formatEther(ETHBalance)}</div>
+        </div>
+        <div className="flex flex-col justify-center">
+          <SecondaryButton text="Destroy wallet" onClick={onDestroyWallet} />
+        </div>
+      </div>
 
-      <div className="mt-8 flex flex-row justify-start">
+      <div className="mt-8 h-32">
+        <div
+          className="-ml-4 w-fit bg-cover bg-no-repeat"
+          style={{ backgroundImage: `url(${yellow_stroke})` }}
+        >
+          <span className="p-4 text-3xl">Assets</span>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-2">
+        <div className="mt-8">
+          <div
+            className="-ml-4 w-fit bg-cover bg-no-repeat"
+            style={{ backgroundImage: `url(${yellow_stroke})` }}
+          >
+            <span className="p-4 text-3xl">Send ETH</span>
+          </div>
+
+          <form action="" className="w-4/5">
+            <div>
+              <label
+                htmlFor="text"
+                className="block text-xl font-medium text-gray-700"
+              >
+                Public Address
+              </label>
+              <div className="mt-1">
+                <input
+                  id="pub_adress"
+                  name="pub_adress"
+                  type="text"
+                  required
+                  className="block w-full appearance-none rounded-md border border-gray-300 px-3 py-2 placeholder-gray-400 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
+                  onChange={(e) => setTransactionAddress(e.target.value)}
+                />
+              </div>
+            </div>
+            <div className="mt-2">
+              <label
+                htmlFor="text"
+                className="block text-xl font-medium text-gray-700"
+              >
+                ETH Amount
+              </label>
+              <div className="mt-1">
+                <input
+                  id="eth_amount"
+                  name="eth_amount"
+                  type="text"
+                  required
+                  className="block w-full appearance-none rounded-md border border-gray-300 px-3 py-2 placeholder-gray-400 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
+                  onChange={(e) => setTransactionETHAmount(e.target.value)}
+                />
+              </div>
+            </div>
+          </form>
+          {/* <TransactionStatus /> */}
+          <div className="mt-4 flex flex-col justify-items-start">
+            <PrimaryButton
+              text="Submit Transaction"
+              onClick={onSubmitTransaction}
+            />
+          </div>
+        </div>
+
+        <div className="mt-8">
+          <div
+            className="-ml-4 w-fit bg-cover bg-no-repeat"
+            style={{ backgroundImage: `url(${yellow_stroke})` }}
+          >
+            <span className="p-4 text-3xl">Transactions</span>
+          </div>
+
+          <div className="grid-col1 mt-4 grid space-y-2">
+            <TransactionStatusCard
+              transactionType="Send ETH"
+              transactionDate={new Date()}
+              transactionStatus={TransactionStatus.pending}
+            />
+            <TransactionStatusCard
+              transactionType="Send ETH"
+              transactionDate={new Date()}
+              transactionStatus={TransactionStatus.confirmed}
+            />
+            <TransactionStatusCard
+              transactionType="Send ETH"
+              transactionDate={new Date()}
+              transactionStatus={TransactionStatus.failed}
+            />
+          </div>
+        </div>
+      </div>
+      {/* <div className="mt-8 flex flex-row justify-start">
         <div>
           <MenuButton
             text="Send ETH"
@@ -125,66 +224,7 @@ function WalletOpenScreen() {
             onClick={() => setMenuState(3)}
           />
         </div>
-      </div>
-
-      <div className="mt-8">
-        <div
-          className="-ml-4 w-fit bg-cover bg-no-repeat"
-          style={{ backgroundImage: `url(${yellow_stroke})` }}
-        >
-          <span className="p-4 text-3xl">Send ETH</span>
-        </div>
-
-        <form action="" className="w-3/5">
-          <div>
-            <label
-              htmlFor="text"
-              className="block text-xl font-medium text-gray-700"
-            >
-              Public Address
-            </label>
-            <div className="mt-1">
-              <input
-                id="pub_adress"
-                name="pub_adress"
-                type="text"
-                required
-                className="block w-full appearance-none rounded-md border border-gray-300 px-3 py-2 placeholder-gray-400 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
-                onChange={(e) => setTransactionAddress(e.target.value)}
-              />
-            </div>
-          </div>
-          <div className="mt-2">
-            <label
-              htmlFor="text"
-              className="block text-xl font-medium text-gray-700"
-            >
-              ETH Amount
-            </label>
-            <div className="mt-1">
-              <input
-                id="eth_amount"
-                name="eth_amount"
-                type="text"
-                required
-                className="block w-full appearance-none rounded-md border border-gray-300 px-3 py-2 placeholder-gray-400 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
-                onChange={(e) => setTransactionETHAmount(e.target.value)}
-              />
-            </div>
-          </div>
-        </form>
-        <TransactionStatus />
-        <div className="mt-4 flex flex-col justify-items-start">
-          <PrimaryButton
-            text="Submit Transaction"
-            onClick={onSubmitTransaction}
-          />
-        </div>
-      </div>
-
-      <div className="mt-8 flex flex-row justify-center">
-        <SecondaryButton text="Destroy wallet" onClick={onDestroyWallet} />
-      </div>
+      </div> */}
     </div>
   )
 }
