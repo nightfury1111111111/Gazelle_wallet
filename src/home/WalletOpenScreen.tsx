@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import { BigNumber, ethers } from 'ethers'
 import { useEffect, useState } from 'react'
 
@@ -22,10 +23,13 @@ function WalletOpenScreen() {
   const [transactionHistory, setTransactionHistory] = useState<
     ethers.providers.TransactionResponse[]
   >([])
-  const [transactions, setTransactions] = useState<
+  const [pendingTransactions, setPendingTransactions] = useState<
     ethers.providers.TransactionResponse[]
   >([])
-  const [listenerActive, setListenerActive] = useState(false)
+  const [confirmedTransactions, setConfirmedTransactions] = useState<
+    ethers.providers.TransactionResponse[]
+  >([])
+  const [historicDataFetched, setHistoricDataFetched] = useState(false)
 
   const yellow_stroke = chrome.runtime.getURL('images/yellow_stroke.svg')
 
@@ -47,22 +51,29 @@ function WalletOpenScreen() {
       setTransactionHistory(txs)
       console.log('Historical txs: ', txs.length)
     }
-
-    if (wallet && wallet.provider) {
+    if (wallet && wallet.provider && !historicDataFetched) {
       getTransactions()
+      setHistoricDataFetched(true)
     }
+  }, [wallet, historicDataFetched])
 
-    if (wallet && wallet.provider && !listenerActive) {
-      setListenerActive(true)
+  useEffect(() => {
+    // console.log(wallet)
+    // if (wallet && wallet.provider && !listenerActive) {
+    if (wallet && wallet.provider) {
+      // setListenerActive(true)
       console.log('Register new listener')
       wallet.provider.on('block', (blockNumber) => {
-        // eslint-disable-next-line no-console
         console.log('New block was minted!', blockNumber)
         wallet.provider
           .getBalance(wallet.address)
           .then((balance) => {
+            // console.log(balance.toString())
+            // console.log(ETHBalance.toString())
+            console.log('Balance changed: ', !balance.eq(ETHBalance))
             if (!balance.eq(ETHBalance)) {
               setETHBalance(balance)
+              console.log('Set new Balance')
             }
           })
           // eslint-disable-next-line no-console
@@ -70,7 +81,8 @@ function WalletOpenScreen() {
 
         wallet.provider.getBlockWithTransactions(blockNumber).then((block) => {
           const txs: ethers.providers.TransactionResponse[] = []
-          block.transactions.forEach((tx) => {
+          // block.transactions.forEach((tx) => {
+          for (const tx of block.transactions) {
             console.log('New minted tx:', tx)
             if (tx.to === wallet.address || tx.from === wallet.address) {
               txs.push({
@@ -78,13 +90,24 @@ function WalletOpenScreen() {
                 timestamp: block.timestamp,
               })
             }
-          })
-          setTransactions(txs)
-          console.log('New txs: ', txs.length)
+          }
+          const confirmedTxs = confirmedTransactions.concat(txs)
+          const PendingTxs = []
+          for (const pendingTx of pendingTransactions) {
+            if (!confirmedTxs.some((x) => x.hash === pendingTx.hash)) {
+              PendingTxs.push(pendingTx)
+            }
+          }
+          setConfirmedTransactions(confirmedTxs)
+          setPendingTransactions(PendingTxs)
+          // console.log('New txs: ', txs.length)
         })
       })
     }
-  }, [wallet, ETHBalance])
+    return () => {
+      wallet.provider.removeAllListeners('block')
+    }
+  }, [wallet, ETHBalance, pendingTransactions, confirmedTransactions])
 
   function onSubmitTransaction() {
     // Create a transaction object
@@ -94,26 +117,19 @@ function WalletOpenScreen() {
       // Convert currency unit from ether to wei
       value: ethers.utils.parseEther(transactionETHAmount),
     }
-    // eslint-disable-next-line no-console
-    console.log(tx)
     // Send a transaction
-    if (wallet !== undefined) {
+    if (wallet) {
       wallet
         .sendTransaction(tx)
         .then(async (txObj) => {
           // eslint-disable-next-line no-console
           console.log('txHash', txObj.hash)
-          txObj
-            .wait(3)
-            .then(() => {
-              setTransactionStatus(2)
-            })
-            .catch(() => {
-              setTransactionStatus(3)
-            })
+          txObj.timestamp = Date.now() / 1000
+          setPendingTransactions([...pendingTransactions].concat(txObj))
         })
         .catch(() => {
-          setTransactionStatus(3)
+          // setPendingTransactions([...pendingTransactions].concat(txObj))
+          // set failed transaction
         })
     }
   }
@@ -216,28 +232,54 @@ function WalletOpenScreen() {
           </div>
 
           <div className="grid-col1 mt-4 grid space-y-2">
-            {transactions &&
-              transactions.map((tx) => {
-                return (
-                  <TransactionStatusCard
-                    key={tx.hash}
-                    transactionType="Send ETH"
-                    transactionDate={new Date((tx.timestamp as number) * 1000)}
-                    transactionStatus={TransactionStatus.confirmed}
-                  />
-                )
-              })}
+            {pendingTransactions &&
+              pendingTransactions
+                .slice(0)
+                .reverse()
+                .map((tx) => {
+                  return (
+                    <TransactionStatusCard
+                      key={tx.hash}
+                      transactionType="Send ETH"
+                      transactionDate={
+                        new Date((tx.timestamp as number) * 1000)
+                      }
+                      transactionStatus={TransactionStatus.pending}
+                    />
+                  )
+                })}
+            {confirmedTransactions &&
+              confirmedTransactions
+                .slice(0)
+                .reverse()
+                .map((tx) => {
+                  return (
+                    <TransactionStatusCard
+                      key={tx.hash}
+                      transactionType="Send ETH"
+                      transactionDate={
+                        new Date((tx.timestamp as number) * 1000)
+                      }
+                      transactionStatus={TransactionStatus.confirmed}
+                    />
+                  )
+                })}
             {transactionHistory &&
-              transactionHistory.map((tx) => {
-                return (
-                  <TransactionStatusCard
-                    key={tx.hash}
-                    transactionType="Send ETH"
-                    transactionDate={new Date((tx.timestamp as number) * 1000)}
-                    transactionStatus={TransactionStatus.confirmed}
-                  />
-                )
-              })}
+              transactionHistory
+                .slice(0)
+                .reverse()
+                .map((tx) => {
+                  return (
+                    <TransactionStatusCard
+                      key={tx.hash}
+                      transactionType="Send ETH"
+                      transactionDate={
+                        new Date((tx.timestamp as number) * 1000)
+                      }
+                      transactionStatus={TransactionStatus.confirmed}
+                    />
+                  )
+                })}
           </div>
         </div>
       </div>
