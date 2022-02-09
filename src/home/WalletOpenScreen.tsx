@@ -1,7 +1,7 @@
 import { BigNumber, ethers } from 'ethers'
 import { useEffect, useState } from 'react'
 
-import truncateString from '../utils'
+import truncateString, { getHistory } from '../utils'
 
 import { useWallet } from './Hooks/useWallet'
 import PrimaryButton from './PrimaryButton'
@@ -9,12 +9,6 @@ import SecondaryButton from './SecondaryButton'
 import TransactionStatusCard, {
   TransactionStatus,
 } from './TransactionStatusCard'
-
-// enum TransactionStatus {
-//   pending = 1,
-//   confirmed,
-//   failed,
-// }
 
 function WalletOpenScreen() {
   const [ETHBalance, setETHBalance] = useState<BigNumber>(ethers.constants.Zero)
@@ -24,8 +18,14 @@ function WalletOpenScreen() {
     wallet: ethers.Wallet
     setWallet: React.Dispatch<React.SetStateAction<ethers.Wallet | undefined>>
   }
-  // const [menuState, setMenuState] = useState(1)
   const [transactionStatus, setTransactionStatus] = useState(0)
+  const [transactionHistory, setTransactionHistory] = useState<
+    ethers.providers.TransactionResponse[]
+  >([])
+  const [transactions, setTransactions] = useState<
+    ethers.providers.TransactionResponse[]
+  >([])
+  const [listenerActive, setListenerActive] = useState(false)
 
   const yellow_stroke = chrome.runtime.getURL('images/yellow_stroke.svg')
 
@@ -36,9 +36,26 @@ function WalletOpenScreen() {
   }, [transactionStatus])
 
   useEffect(() => {
+    async function getTransactions() {
+      const currentBlockNumber = await wallet.provider.getBlockNumber()
+      const txs = await getHistory(
+        wallet.provider,
+        wallet.address,
+        Math.max(currentBlockNumber - 100, 0),
+        currentBlockNumber,
+      )
+      setTransactionHistory(txs)
+      console.log('Historical txs: ', txs.length)
+    }
+
     if (wallet && wallet.provider) {
-      //   console.log('handler set')
-      wallet.provider.once('block', (blockNumber) => {
+      getTransactions()
+    }
+
+    if (wallet && wallet.provider && !listenerActive) {
+      setListenerActive(true)
+      console.log('Register new listener')
+      wallet.provider.on('block', (blockNumber) => {
         // eslint-disable-next-line no-console
         console.log('New block was minted!', blockNumber)
         wallet.provider
@@ -50,6 +67,21 @@ function WalletOpenScreen() {
           })
           // eslint-disable-next-line no-console
           .catch(console.error)
+
+        wallet.provider.getBlockWithTransactions(blockNumber).then((block) => {
+          const txs: ethers.providers.TransactionResponse[] = []
+          block.transactions.forEach((tx) => {
+            console.log('New minted tx:', tx)
+            if (tx.to === wallet.address || tx.from === wallet.address) {
+              txs.push({
+                ...tx,
+                timestamp: block.timestamp,
+              })
+            }
+          })
+          setTransactions(txs)
+          console.log('New txs: ', txs.length)
+        })
       })
     }
   }, [wallet, ETHBalance])
@@ -98,7 +130,7 @@ function WalletOpenScreen() {
         <div>
           <div className="text-2xl font-bold">Public Address</div>
           <div className="text-xl">
-            {truncateString(wallet.address, 20, '...')}
+            {truncateString(wallet.address, 30, '...')}
           </div>
         </div>
         <div className="">
@@ -184,21 +216,28 @@ function WalletOpenScreen() {
           </div>
 
           <div className="grid-col1 mt-4 grid space-y-2">
-            <TransactionStatusCard
-              transactionType="Send ETH"
-              transactionDate={new Date()}
-              transactionStatus={TransactionStatus.pending}
-            />
-            <TransactionStatusCard
-              transactionType="Send ETH"
-              transactionDate={new Date()}
-              transactionStatus={TransactionStatus.confirmed}
-            />
-            <TransactionStatusCard
-              transactionType="Send ETH"
-              transactionDate={new Date()}
-              transactionStatus={TransactionStatus.failed}
-            />
+            {transactions &&
+              transactions.map((tx) => {
+                return (
+                  <TransactionStatusCard
+                    key={tx.hash}
+                    transactionType="Send ETH"
+                    transactionDate={new Date((tx.timestamp as number) * 1000)}
+                    transactionStatus={TransactionStatus.confirmed}
+                  />
+                )
+              })}
+            {transactionHistory &&
+              transactionHistory.map((tx) => {
+                return (
+                  <TransactionStatusCard
+                    key={tx.hash}
+                    transactionType="Send ETH"
+                    transactionDate={new Date((tx.timestamp as number) * 1000)}
+                    transactionStatus={TransactionStatus.confirmed}
+                  />
+                )
+              })}
           </div>
         </div>
       </div>
