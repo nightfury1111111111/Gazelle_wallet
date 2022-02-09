@@ -12,24 +12,30 @@ type PropType = {
 
 export const WalletProvider = ({ children }: PropType) => {
   const [wallet, setWallet] = useState<ethers.Wallet | undefined>(undefined)
-  const [walletLoading, setWalletLoading] = useState<boolean>(false)
+  const [walletLoading, setWalletLoading] = useState<boolean>(true)
+  const [walletCreationFinished, setWalletCreationFinished] =
+    useState<boolean>(false)
   const provider = useProvider()
 
   useEffect(() => {
     const getStoredWallet = async () => {
       setWalletLoading(true)
-      chrome.storage.local.get(['gazelle_wallet'], async function (result) {
+      chrome.storage.local.get(['gazelle_wallet'], function (result) {
         const walletJson = result['gazelle_wallet']
         if (walletJson !== undefined) {
-          const _wallet = await ethers.Wallet.fromEncryptedJson(
-            walletJson,
-            'pw',
-          )
-          setWallet(_wallet)
+          ethers.Wallet.fromEncryptedJson(walletJson, 'pw')
+            .then((_wallet) => {
+              setWallet(_wallet)
+              setWalletCreationFinished(true)
+              setWalletLoading(false)
+              // eslint-disable-next-line no-console
+              console.log('Wallet Address: ', _wallet.address)
+            })
+            .catch(() => {
+              setWalletLoading(false)
+            })
+        } else {
           setWalletLoading(false)
-
-          // eslint-disable-next-line no-console
-          console.log('Wallet Address: ', _wallet.address)
         }
       })
     }
@@ -60,7 +66,15 @@ export const WalletProvider = ({ children }: PropType) => {
   }, [wallet, provider])
 
   return (
-    <WalletContext.Provider value={{ wallet, setWallet, walletLoading }}>
+    <WalletContext.Provider
+      value={{
+        wallet,
+        setWallet,
+        walletLoading,
+        walletCreationFinished,
+        setWalletCreationFinished,
+      }}
+    >
       {children}
     </WalletContext.Provider>
   )

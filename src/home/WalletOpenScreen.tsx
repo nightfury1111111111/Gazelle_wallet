@@ -15,9 +15,10 @@ function WalletOpenScreen() {
   const [ETHBalance, setETHBalance] = useState<BigNumber>(ethers.constants.Zero)
   const [transactionAddress, setTransactionAddress] = useState<string>('')
   const [transactionETHAmount, setTransactionETHAmount] = useState<string>('0')
-  const { wallet, setWallet } = useWallet() as {
+  const { wallet, setWallet, setWalletCreationFinished } = useWallet() as {
     wallet: ethers.Wallet
     setWallet: React.Dispatch<React.SetStateAction<ethers.Wallet | undefined>>
+    setWalletCreationFinished: React.Dispatch<React.SetStateAction<boolean>>
   }
   const [transactionStatus, setTransactionStatus] = useState(0)
   const [transactionHistory, setTransactionHistory] = useState<
@@ -137,6 +138,7 @@ function WalletOpenScreen() {
   function onDestroyWallet() {
     chrome.storage.local.remove(['gazelle_wallet'], function () {
       setWallet(undefined)
+      setWalletCreationFinished(false)
     })
   }
 

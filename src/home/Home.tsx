@@ -8,9 +8,13 @@ import WalletCreationScreen2 from './WalletCreationScreen2'
 import WalletOpenScreen from './WalletOpenScreen'
 
 function Home() {
-  const { wallet, walletLoading } = useWallet() as WalletContextType
-  const [walletCreationFinished, setWalletCreationFinished] =
-    useState<boolean>(true)
+  const {
+    wallet,
+    walletLoading,
+    walletCreationFinished,
+    setWalletCreationFinished,
+  } = useWallet() as WalletContextType
+  useState<boolean>(false)
 
   function Screen() {
     if (walletLoading) {
