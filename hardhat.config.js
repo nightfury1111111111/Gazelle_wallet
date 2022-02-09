@@ -18,7 +18,7 @@ module.exports = {
     hardhat: {
       chainId: 1337,
       mining: {
-        auto: true,
+        auto: false,
         interval: 5000,
       },
       accounts: process.env.MNEMONIC
