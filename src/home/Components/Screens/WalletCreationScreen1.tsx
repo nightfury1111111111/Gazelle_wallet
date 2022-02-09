@@ -1,10 +1,9 @@
 import { ethers } from 'ethers'
 import React from 'react'
 
-import { WalletContextType } from './Contexts/WalletContext'
-import { useWallet } from './Hooks/useWallet'
-import PrimaryButton from './PrimaryButton'
-ethers.Wallet.createRandom
+import { WalletContextType } from '../../Contexts/WalletContext'
+import { useWallet } from '../../Hooks/useWallet'
+import PrimaryButton from '../Buttons/PrimaryButton'
 
 function WalletCreationScreen1() {
   const { setWallet } = useWallet() as WalletContextType

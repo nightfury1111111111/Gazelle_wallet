@@ -2,14 +2,13 @@
 import { BigNumber, ethers } from 'ethers'
 import { useEffect, useState } from 'react'
 
-import truncateString, { getHistory } from '../utils'
-
-import { useWallet } from './Hooks/useWallet'
-import PrimaryButton from './PrimaryButton'
-import SecondaryButton from './SecondaryButton'
+import truncateString, { getHistory } from '../../../utils'
+import { useWallet } from '../../Hooks/useWallet'
+import PrimaryButton from '../Buttons/PrimaryButton'
+import SecondaryButton from '../Buttons/SecondaryButton'
 import TransactionStatusCard, {
   TransactionStatus,
-} from './TransactionStatusCard'
+} from '../TransactionStatusCard'
 
 function WalletOpenScreen() {
   const [ETHBalance, setETHBalance] = useState<BigNumber>(ethers.constants.Zero)

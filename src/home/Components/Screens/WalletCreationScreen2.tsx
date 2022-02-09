@@ -1,7 +1,7 @@
-import { WalletContextType } from './Contexts/WalletContext'
-import { useWallet } from './Hooks/useWallet'
-import PrimaryButton from './PrimaryButton'
-import SeedPhraseLabel from './SeedphraseLabel'
+import { WalletContextType } from '../../Contexts/WalletContext'
+import { useWallet } from '../../Hooks/useWallet'
+import PrimaryButton from '../Buttons/PrimaryButton'
+import SeedPhraseLabel from '../SeedphraseLabel'
 
 type propType = {
   setWalletCreationFinished: React.Dispatch<React.SetStateAction<boolean>>

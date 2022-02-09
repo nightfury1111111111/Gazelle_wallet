@@ -1,11 +1,11 @@
 import { useState } from 'react'
 
+import LoadingSpinner from './Components/LoadingSpinner'
+import WalletCreationScreen1 from './Components/Screens/WalletCreationScreen1'
+import WalletCreationScreen2 from './Components/Screens/WalletCreationScreen2'
+import WalletOpenScreen from './Components/Screens/WalletOpenScreen'
 import { WalletContextType } from './Contexts/WalletContext'
 import { useWallet } from './Hooks/useWallet'
-import LoadingSpinner from './LoadingSpinner'
-import WalletCreationScreen1 from './WalletCreationScreen1'
-import WalletCreationScreen2 from './WalletCreationScreen2'
-import WalletOpenScreen from './WalletOpenScreen'
 
 function Home() {
   const {
