@@ -22,9 +22,6 @@ function WalletOpenScreen() {
     setWalletCreationFinished: React.Dispatch<React.SetStateAction<boolean>>
   }
   // const [transactionStatus, setTransactionStatus] = useState(0)
-  // const [transactionHistory, setTransactionHistory] = useState<
-  //   ethers.providers.TransactionResponse[]
-  // >([])
   const [transactionHistory, setTransactionHistory] = useState<
     TransactionHistoryItem[]
   >([])
@@ -32,12 +29,6 @@ function WalletOpenScreen() {
   // const [ERC20Assets, setERC20Assets] = useState<any>()
 
   const yellow_stroke = chrome.runtime.getURL('images/yellow_stroke.svg')
-
-  // useEffect(() => {
-  //   if (transactionStatus >= 2) {
-  //     setTimeout(() => setTransactionStatus(0), 6000)
-  //   }
-  // }, [transactionStatus])
 
   useEffect(() => {
     async function getTransactions() {
@@ -60,7 +51,6 @@ function WalletOpenScreen() {
   }, [wallet, historicDataFetched])
 
   useEffect(() => {
-    // console.log(wallet)
     // if (wallet && wallet.provider && !listenerActive) {
     if (wallet && wallet.provider) {
       // setListenerActive(true)
@@ -93,16 +83,6 @@ function WalletOpenScreen() {
               })
             }
           }
-          //         // const confirmedTxs = confirmedTransactions.concat(txs)
-          //         // const PendingTxs = []
-          //         // for (const pendingTx of pendingTransactions) {
-          //         //   if (!confirmedTxs.some((x) => x.hash === pendingTx.hash)) {
-          //         //     PendingTxs.push(pendingTx)
-          //         //   }
-          //         // }
-          //         // setConfirmedTransactions(confirmedTxs)
-          //         // setPendingTransactions(PendingTxs)
-          //         // console.log('New txs: ', txs.length)
         })
       })
     }
