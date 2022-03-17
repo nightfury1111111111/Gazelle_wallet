@@ -75,7 +75,7 @@ const config: webpack.Configuration = {
   // @ts-ignore
   plugins: [
     new CleanWebpackPlugin(),
-    new Dotenv(),
+    new Dotenv({ path: `./.env.${process.env.NODE_ENV}` }),
     new webpack.EnvironmentPlugin({
       MV3_HOT_RELOAD_PORT: 7761,
     }),

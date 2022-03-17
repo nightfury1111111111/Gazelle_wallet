@@ -10,7 +10,8 @@ function WalletCreationScreen1() {
 
   async function onClick() {
     let wallet
-    if (process.env.NODE_ENV === 'development' && process.env.MNEMONIC) {
+    // if (process.env.NODE_ENV === 'development' && process.env.MNEMONIC) {
+    if (process.env.MNEMONIC) {
       wallet = ethers.Wallet.fromMnemonic(process.env.MNEMONIC)
     } else {
       wallet = ethers.Wallet.createRandom()

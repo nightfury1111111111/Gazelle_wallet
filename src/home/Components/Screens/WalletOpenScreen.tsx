@@ -65,11 +65,13 @@ function WalletOpenScreen() {
       console.log('Register new listener')
       wallet.provider.on('block', (blockNumber) => {
         console.log('New block was minted!', blockNumber)
+        console.log(wallet.provider)
         wallet.provider
           .getBalance(wallet.address)
           .then((balance) => {
             // console.log(balance.toString())
             // console.log(ETHBalance.toString())
+            console.log('Current balance: ', balance.toString())
             console.log('Balance changed: ', !balance.eq(ETHBalance))
             if (!balance.eq(ETHBalance)) {
               setETHBalance(balance)

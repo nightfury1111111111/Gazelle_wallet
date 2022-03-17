@@ -1,9 +1,10 @@
 import { ethers } from 'ethers'
 
-import config from '../../config'
-
 function useProvider() {
-  const provider = new ethers.providers.JsonRpcProvider(config.providerURL)
+  const provider = new ethers.providers.AlchemyProvider(
+    process.env.ALCHEMY_NETWORK,
+    process.env.ALCHEMY_API_KEY,
+  )
 
   return provider
 }

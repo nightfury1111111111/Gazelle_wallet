@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "chrome-extension-typescript-starter",
   "scripts": {
-    "watch:src": " cross-env NODE_ENV=development TAILWIND_MODE=watch webpack",
+    "watch:src": " cross-env NODE_ENV=production TAILWIND_MODE=watch webpack",
     "watch:dist": "mv3-hot-reload",
     "dev:script": "concurrently yarn:watch:*",
     "dev:pages": "cross-env NODE_ENV=development webpack serve",
