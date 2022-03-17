@@ -1,14 +1,11 @@
-export enum TransactionStatus {
-  pending = 1,
-  confirmed,
-  failed,
-}
+import { TransactionHistoryItemStatusEnum } from '@/lib/schemas'
+import { TransactionHistoryItemStatus } from '@/lib/types'
 
 type propType = {
   transactionType: string
   onClick?: () => void
   transactionDate: Date
-  transactionStatus: TransactionStatus
+  transactionStatus: TransactionHistoryItemStatus
 }
 
 const iconConfirmed = (
@@ -70,24 +67,28 @@ function TransactionStatusCard({
 }: propType) {
   function TransactionIcon() {
     switch (transactionStatus) {
-      case TransactionStatus.confirmed:
+      case TransactionHistoryItemStatusEnum.enum.confirmed:
         return iconConfirmed
-      case TransactionStatus.pending:
+      case TransactionHistoryItemStatusEnum.enum.pending:
         return iconPending
-      case TransactionStatus.failed:
+      case TransactionHistoryItemStatusEnum.enum.failed:
         return iconFailed
     }
   }
 
   let transactionStatusText
   let transactionStatusTextColorClass
-  if (transactionStatus == TransactionStatus.confirmed) {
+  if (transactionStatus == TransactionHistoryItemStatusEnum.enum.confirmed) {
     transactionStatusText = 'confirmed'
     transactionStatusTextColorClass = 'text-green-700'
-  } else if (transactionStatus == TransactionStatus.pending) {
+  } else if (
+    transactionStatus == TransactionHistoryItemStatusEnum.enum.pending
+  ) {
     transactionStatusText = 'pending'
     transactionStatusTextColorClass = 'text-purple-700'
-  } else if (transactionStatus == TransactionStatus.failed) {
+  } else if (
+    transactionStatus == TransactionHistoryItemStatusEnum.enum.failed
+  ) {
     transactionStatusText = 'failed'
     transactionStatusTextColorClass = 'text-red-700'
   }

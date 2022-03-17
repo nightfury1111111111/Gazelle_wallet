@@ -2,13 +2,15 @@
 import { BigNumber, ethers } from 'ethers'
 import { useEffect, useState } from 'react'
 
-import truncateString, { getHistory } from '../../../utils'
+import { TransactionHistoryItemStatusEnum } from '@/lib/schemas'
+import { TransactionHistoryItem } from '@/lib/types'
+
+import { fetchTransactionHistory } from '../../../lib/api'
+import truncateString from '../../../utils'
 import { useWallet } from '../../Hooks/useWallet'
 import PrimaryButton from '../Buttons/PrimaryButton'
 import SecondaryButton from '../Buttons/SecondaryButton'
-import TransactionStatusCard, {
-  TransactionStatus,
-} from '../TransactionStatusCard'
+import TransactionStatusCard from '../TransactionStatusCard'
 
 function WalletOpenScreen() {
   const [ETHBalance, setETHBalance] = useState<BigNumber>(ethers.constants.Zero)
@@ -19,40 +21,40 @@ function WalletOpenScreen() {
     setWallet: React.Dispatch<React.SetStateAction<ethers.Wallet | undefined>>
     setWalletCreationFinished: React.Dispatch<React.SetStateAction<boolean>>
   }
-  const [transactionStatus, setTransactionStatus] = useState(0)
+  // const [transactionStatus, setTransactionStatus] = useState(0)
+  // const [transactionHistory, setTransactionHistory] = useState<
+  //   ethers.providers.TransactionResponse[]
+  // >([])
   const [transactionHistory, setTransactionHistory] = useState<
-    ethers.providers.TransactionResponse[]
-  >([])
-  const [pendingTransactions, setPendingTransactions] = useState<
-    ethers.providers.TransactionResponse[]
-  >([])
-  const [confirmedTransactions, setConfirmedTransactions] = useState<
-    ethers.providers.TransactionResponse[]
+    TransactionHistoryItem[]
   >([])
   const [historicDataFetched, setHistoricDataFetched] = useState(false)
+  // const [ERC20Assets, setERC20Assets] = useState<any>()
 
   const yellow_stroke = chrome.runtime.getURL('images/yellow_stroke.svg')
 
-  useEffect(() => {
-    if (transactionStatus >= 2) {
-      setTimeout(() => setTransactionStatus(0), 6000)
-    }
-  }, [transactionStatus])
+  // useEffect(() => {
+  //   if (transactionStatus >= 2) {
+  //     setTimeout(() => setTransactionStatus(0), 6000)
+  //   }
+  // }, [transactionStatus])
 
   useEffect(() => {
     async function getTransactions() {
-      const currentBlockNumber = await wallet.provider.getBlockNumber()
-      const txs = await getHistory(
-        wallet.provider,
-        wallet.address,
-        Math.max(currentBlockNumber - 100, 0),
-        currentBlockNumber,
-      )
-      setTransactionHistory(txs)
-      console.log('Historical txs: ', txs.length)
+      // const currentBlockNumber = await wallet.provider.getBlockNumber()
+      const txs = await fetchTransactionHistory(wallet.address)
+      setTransactionHistory(txs.reverse())
+      console.log('Historical txs: ', txs)
     }
+    // async function getERC20Balances() {
+    //   const balances = await fetchTokenBalances(wallet.address)
+    //   // setERC20Assets(balances)
+    //   console.log('ERC20 Balance: ', balances)
+    //   return balances
+    // }
     if (wallet && wallet.provider && !historicDataFetched) {
       getTransactions()
+      // getERC20Balances()
       setHistoricDataFetched(true)
     }
   }, [wallet, historicDataFetched])
@@ -71,8 +73,6 @@ function WalletOpenScreen() {
           .then((balance) => {
             // console.log(balance.toString())
             // console.log(ETHBalance.toString())
-            console.log('Current balance: ', balance.toString())
-            console.log('Balance changed: ', !balance.eq(ETHBalance))
             if (!balance.eq(ETHBalance)) {
               setETHBalance(balance)
               console.log('Set new Balance')
@@ -85,7 +85,7 @@ function WalletOpenScreen() {
           const txs: ethers.providers.TransactionResponse[] = []
           // block.transactions.forEach((tx) => {
           for (const tx of block.transactions) {
-            console.log('New minted tx:', tx)
+            // console.log('New minted tx:', tx)
             if (tx.to === wallet.address || tx.from === wallet.address) {
               txs.push({
                 ...tx,
@@ -93,27 +93,33 @@ function WalletOpenScreen() {
               })
             }
           }
-          const confirmedTxs = confirmedTransactions.concat(txs)
-          const PendingTxs = []
-          for (const pendingTx of pendingTransactions) {
-            if (!confirmedTxs.some((x) => x.hash === pendingTx.hash)) {
-              PendingTxs.push(pendingTx)
-            }
-          }
-          setConfirmedTransactions(confirmedTxs)
-          setPendingTransactions(PendingTxs)
-          // console.log('New txs: ', txs.length)
+          //         // const confirmedTxs = confirmedTransactions.concat(txs)
+          //         // const PendingTxs = []
+          //         // for (const pendingTx of pendingTransactions) {
+          //         //   if (!confirmedTxs.some((x) => x.hash === pendingTx.hash)) {
+          //         //     PendingTxs.push(pendingTx)
+          //         //   }
+          //         // }
+          //         // setConfirmedTransactions(confirmedTxs)
+          //         // setPendingTransactions(PendingTxs)
+          //         // console.log('New txs: ', txs.length)
         })
       })
     }
     return () => {
       wallet.provider.removeAllListeners('block')
     }
-  }, [wallet, ETHBalance, pendingTransactions, confirmedTransactions])
+  }, [wallet, ETHBalance])
 
   function onSubmitTransaction() {
     // Create a transaction object
-    setTransactionStatus(1)
+    // setTransactionStatus(1)
+    async function getTransactions() {
+      // const currentBlockNumber = await wallet.provider.getBlockNumber()
+      const txs = await fetchTransactionHistory(wallet.address)
+      setTransactionHistory(txs.reverse())
+      console.log('Fetched all transactions.', txs)
+    }
     const tx = {
       to: transactionAddress,
       // Convert currency unit from ether to wei
@@ -126,12 +132,21 @@ function WalletOpenScreen() {
         .then(async (txObj) => {
           // eslint-disable-next-line no-console
           console.log('txHash', txObj.hash)
-          txObj.timestamp = Date.now() / 1000
-          setPendingTransactions([...pendingTransactions].concat(txObj))
+          const pendingTx: TransactionHistoryItem = {
+            hash: txObj.hash,
+            type: 'tbd',
+            status: TransactionHistoryItemStatusEnum.enum.pending,
+            timestamp: Date.now(),
+          }
+          setTransactionHistory([...transactionHistory].concat(pendingTx))
+          wallet.provider.once(txObj.hash, (tx) => {
+            console.log('transaction mined: ', tx)
+            getTransactions() // fetch all Transactions
+          })
         })
-        .catch(() => {
-          // setPendingTransactions([...pendingTransactions].concat(txObj))
+        .catch((error) => {
           // set failed transaction
+          console.log(error)
         })
     }
   }
@@ -217,7 +232,6 @@ function WalletOpenScreen() {
               </div>
             </div>
           </form>
-          {/* <TransactionStatus /> */}
           <div className="mt-4 flex flex-col justify-items-start">
             <PrimaryButton
               text="Submit Transaction"
@@ -235,80 +249,24 @@ function WalletOpenScreen() {
           </div>
 
           <div className="grid-col1 mt-4 grid space-y-2">
-            {pendingTransactions &&
-              pendingTransactions
-                .slice(0)
-                .reverse()
-                .map((tx) => {
-                  return (
-                    <TransactionStatusCard
-                      key={tx.hash}
-                      transactionType="Send ETH"
-                      transactionDate={
-                        new Date((tx.timestamp as number) * 1000)
-                      }
-                      transactionStatus={TransactionStatus.pending}
-                    />
-                  )
-                })}
-            {confirmedTransactions &&
-              confirmedTransactions
-                .slice(0)
-                .reverse()
-                .map((tx) => {
-                  return (
-                    <TransactionStatusCard
-                      key={tx.hash}
-                      transactionType="Send ETH"
-                      transactionDate={
-                        new Date((tx.timestamp as number) * 1000)
-                      }
-                      transactionStatus={TransactionStatus.confirmed}
-                    />
-                  )
-                })}
             {transactionHistory &&
               transactionHistory
                 .slice(0)
                 .reverse()
                 .map((tx) => {
+                  console.log(tx.status)
                   return (
                     <TransactionStatusCard
                       key={tx.hash}
                       transactionType="Send ETH"
-                      transactionDate={
-                        new Date((tx.timestamp as number) * 1000)
-                      }
-                      transactionStatus={TransactionStatus.confirmed}
+                      transactionDate={new Date(tx.timestamp)}
+                      transactionStatus={tx.status}
                     />
                   )
                 })}
           </div>
         </div>
       </div>
-      {/* <div className="mt-8 flex flex-row justify-start">
-        <div>
-          <MenuButton
-            text="Send ETH"
-            isActive={menuState == 1}
-            onClick={() => setMenuState(1)}
-          />
-        </div>
-        <div className="ml-4">
-          <MenuButton
-            text="Past transaction"
-            isActive={menuState == 2}
-            onClick={() => setMenuState(2)}
-          />
-        </div>
-        <div className="ml-4">
-          <MenuButton
-            text="Assets"
-            isActive={menuState == 3}
-            onClick={() => setMenuState(3)}
-          />
-        </div>
-      </div> */}
     </div>
   )
 }
