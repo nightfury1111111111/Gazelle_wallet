@@ -13,4 +13,18 @@ const TransactionHistoryItem = z.object({
   timestamp: z.number(),
 })
 
-export { TransactionHistoryItem, TransactionHistoryItemStatusEnum }
+const ERC20BalanceItem = z.object({
+  balance: z.number(),
+  decimals: z.number(),
+  logo: z.string(),
+  name: z.string(),
+  symbol: z.string(),
+  thumbnail: z.string(),
+  token_address: z.string(),
+})
+
+export {
+  TransactionHistoryItem,
+  TransactionHistoryItemStatusEnum,
+  ERC20BalanceItem,
+}
