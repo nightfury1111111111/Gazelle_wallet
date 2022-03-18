@@ -5,7 +5,11 @@ import { useEffect, useState } from 'react'
 import { TransactionHistoryItemStatusEnum } from '@/lib/schemas'
 import { ERC20BalanceItem, TransactionHistoryItem } from '@/lib/types'
 
-import { fetchTokenBalances, fetchTransactionHistory } from '../../../lib/api'
+import {
+  fetchTokenBalances,
+  fetchNativeTokenBalance,
+  fetchTransactionHistory,
+} from '../../../lib/api'
 import truncateString from '../../../utils'
 import { useWallet } from '../../Hooks/useWallet'
 import PrimaryButton from '../Buttons/PrimaryButton'
@@ -15,7 +19,9 @@ import SendTokenDropdownMenu from '../SendTokenDropdownMenu'
 import TransactionStatusCard from '../TransactionStatusCard'
 
 function WalletOpenScreen() {
-  const [ETHBalance, setETHBalance] = useState<BigNumber>(ethers.constants.Zero)
+  const [NativeTokenBalance, setNativeTokenBalance] = useState<BigNumber>(
+    ethers.constants.Zero,
+  )
   const [transactionAddress, setTransactionAddress] = useState<string>('')
   const [transactionETHAmount, setTransactionETHAmount] = useState<string>('0')
   const { wallet, setWallet, setWalletCreationFinished } = useWallet() as {
@@ -44,53 +50,59 @@ function WalletOpenScreen() {
       console.log('ERC20 Balance: ', balances)
       return balances
     }
+    async function getNativeTokenBalance() {
+      const balance = await fetchNativeTokenBalance(wallet.address)
+      setNativeTokenBalance(balance)
+      return balance
+    }
     if (wallet && wallet.provider && !historicDataFetched) {
       getTransactions()
       getERC20Balances()
+      getNativeTokenBalance()
       setHistoricDataFetched(true)
     }
   }, [wallet, historicDataFetched])
 
-  useEffect(() => {
-    // if (wallet && wallet.provider && !listenerActive) {
-    if (wallet && wallet.provider) {
-      // setListenerActive(true)
-      console.log('Register new listener')
-      wallet.provider.on('block', (blockNumber) => {
-        console.log('New block was minted!', blockNumber)
-        console.log(wallet.provider)
-        wallet.provider
-          .getBalance(wallet.address)
-          .then((balance) => {
-            // console.log(balance.toString())
-            // console.log(ETHBalance.toString())
-            if (!balance.eq(ETHBalance)) {
-              setETHBalance(balance)
-              console.log('Set new Balance')
-            }
-          })
-          // eslint-disable-next-line no-console
-          .catch(console.error)
+  // useEffect(() => {
+  //   // if (wallet && wallet.provider && !listenerActive) {
+  //   if (wallet && wallet.provider) {
+  //     // setListenerActive(true)
+  //     console.log('Register new listener')
+  //     wallet.provider.on('block', (blockNumber) => {
+  //       console.log('New block was minted!', blockNumber)
+  //       console.log(wallet.provider)
+  //       wallet.provider
+  //         .getBalance(wallet.address)
+  //         .then((balance) => {
+  //           // console.log(balance.toString())
+  //           // console.log(ETHBalance.toString())
+  //           if (!balance.eq(ETHBalance)) {
+  //             setETHBalance(balance)
+  //             console.log('Set new Balance')
+  //           }
+  //         })
+  //         // eslint-disable-next-line no-console
+  //         .catch(console.error)
 
-        wallet.provider.getBlockWithTransactions(blockNumber).then((block) => {
-          const txs: ethers.providers.TransactionResponse[] = []
-          // block.transactions.forEach((tx) => {
-          for (const tx of block.transactions) {
-            // console.log('New minted tx:', tx)
-            if (tx.to === wallet.address || tx.from === wallet.address) {
-              txs.push({
-                ...tx,
-                timestamp: block.timestamp,
-              })
-            }
-          }
-        })
-      })
-    }
-    return () => {
-      wallet.provider.removeAllListeners('block')
-    }
-  }, [wallet, ETHBalance])
+  // wallet.provider.getBlockWithTransactions(blockNumber).then((block) => {
+  //   const txs: ethers.providers.TransactionResponse[] = []
+  //   // block.transactions.forEach((tx) => {
+  //   for (const tx of block.transactions) {
+  //     // console.log('New minted tx:', tx)
+  //     if (tx.to === wallet.address || tx.from === wallet.address) {
+  //       txs.push({
+  //         ...tx,
+  //         timestamp: block.timestamp,
+  //       })
+  //     }
+  //   }
+  // })
+  //     })
+  //   }
+  //   return () => {
+  //     wallet.provider.removeAllListeners('block')
+  //   }
+  // }, [wallet, ETHBalance])
 
   function onSubmitTransaction() {
     // Create a transaction object
@@ -149,8 +161,10 @@ function WalletOpenScreen() {
           </div>
         </div>
         <div className="">
-          <div className="text-2xl font-bold">ETH Balance</div>
-          <div className="text-xl">{ethers.utils.formatEther(ETHBalance)}</div>
+          <div className="text-2xl font-bold">Native Token Balance</div>
+          <div className="text-xl">
+            {ethers.utils.formatEther(NativeTokenBalance)}
+          </div>
         </div>
         <div className="flex flex-col justify-center">
           <SecondaryButton text="Destroy wallet" onClick={onDestroyWallet} />
@@ -167,7 +181,9 @@ function WalletOpenScreen() {
         <div className="mx-auto mt-4 grid grid-flow-row grid-cols-4 gap-4">
           {ERC20Assets &&
             ERC20Assets.map((asset) => {
-              return <ERC20ItemCard ERC20Item={asset} />
+              return (
+                <ERC20ItemCard key={asset.token_address} ERC20Item={asset} />
+              )
             })}
         </div>
       </div>

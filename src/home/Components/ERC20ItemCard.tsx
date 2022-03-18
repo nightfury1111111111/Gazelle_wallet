@@ -1,5 +1,7 @@
 const thumbnail_replacement = chrome.runtime.getURL('images/uk_heart.png')
 
+import { ethers } from 'ethers'
+
 import { ERC20BalanceItem } from '@/lib/types'
 
 type propType = {
@@ -43,6 +45,11 @@ type propType = {
 function ERC20ItemCard({ ERC20Item }: propType) {
   const thumbnail =
     ERC20Item.thumbnail !== null ? ERC20Item.thumbnail : thumbnail_replacement
+
+  const b = ethers.BigNumber.from(ERC20Item.balance)
+  const d = ethers.BigNumber.from(ERC20Item.decimals)
+  const ten = ethers.BigNumber.from(10)
+  const balance = b.div(ten.pow(d))
   return (
     <div className="flex flex-row">
       <div>
@@ -54,9 +61,7 @@ function ERC20ItemCard({ ERC20Item }: propType) {
         />
       </div>
       <div className="ml-2 flex items-center justify-center ">
-        <div className="text-xl font-semibold">
-          {ERC20Item.balance / 10 ** ERC20Item.decimals}
-        </div>
+        <div className="text-xl font-semibold">{balance.toString()}</div>
       </div>
       <div className="ml-2 flex items-center justify-center">
         <div className="text-xl font-semibold">{ERC20Item.symbol}</div>

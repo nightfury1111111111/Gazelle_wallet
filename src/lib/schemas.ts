@@ -14,12 +14,12 @@ const TransactionHistoryItem = z.object({
 })
 
 const ERC20BalanceItem = z.object({
-  balance: z.number(),
-  decimals: z.number(),
-  logo: z.string(),
+  balance: z.string(),
+  decimals: z.string(),
+  logo: z.string().optional(),
   name: z.string(),
   symbol: z.string(),
-  thumbnail: z.string(),
+  thumbnail: z.string().optional(),
   token_address: z.string(),
 })
 

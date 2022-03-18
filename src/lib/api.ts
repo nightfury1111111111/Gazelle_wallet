@@ -1,3 +1,4 @@
+import { ethers } from 'ethers'
 import Moralis from 'moralis'
 
 import { TransactionHistoryItemStatusEnum } from './schemas'
@@ -18,6 +19,18 @@ async function fetchTokenBalances(address: string) {
     options as any,
   )
   return balances
+}
+
+async function fetchNativeTokenBalance(address: string) {
+  const options = {
+    chain: process.env.MORALIS_CHAIN_NAME,
+    address: address,
+  }
+  const apiResponse = await Moralis.Web3API.account.getNativeBalance(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    options as any,
+  )
+  return ethers.BigNumber.from(apiResponse.balance)
 }
 
 async function fetchTransactionHistory(address: string) {
@@ -104,4 +117,9 @@ async function fetchTransactionHistory(address: string) {
 //   })
 // }
 
-export { fetchTokenBalances, fetchTransactionHistory }
+export {
+  fetchTokenBalances,
+  fetchNativeTokenBalance,
+  fetchTransactionHistory,
+  // sendERC20Token,
+}
