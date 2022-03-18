@@ -11,6 +11,7 @@ import { useWallet } from '../../Hooks/useWallet'
 import PrimaryButton from '../Buttons/PrimaryButton'
 import SecondaryButton from '../Buttons/SecondaryButton'
 import ERC20ItemCard from '../ERC20ItemCard'
+import SendTokenDropdownMenu from '../SendTokenDropdownMenu'
 import TransactionStatusCard from '../TransactionStatusCard'
 
 function WalletOpenScreen() {
@@ -186,6 +187,19 @@ function WalletOpenScreen() {
                 htmlFor="text"
                 className="block text-xl font-medium text-gray-700"
               >
+                Token
+              </label>
+              <div className="mt-1">
+                {ERC20Assets && (
+                  <SendTokenDropdownMenu ERC20Tokens={ERC20Assets} />
+                )}
+              </div>
+            </div>
+            <div className="mt-2">
+              <label
+                htmlFor="text"
+                className="block text-xl font-medium text-gray-700"
+              >
                 Public Address
               </label>
               <div className="mt-1">
@@ -204,7 +218,7 @@ function WalletOpenScreen() {
                 htmlFor="text"
                 className="block text-xl font-medium text-gray-700"
               >
-                ETH Amount
+                Amount
               </label>
               <div className="mt-1">
                 <input
