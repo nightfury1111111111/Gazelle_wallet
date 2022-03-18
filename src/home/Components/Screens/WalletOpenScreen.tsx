@@ -3,13 +3,14 @@ import { BigNumber, ethers } from 'ethers'
 import { useEffect, useState } from 'react'
 
 import { TransactionHistoryItemStatusEnum } from '@/lib/schemas'
-import { TransactionHistoryItem } from '@/lib/types'
+import { ERC20BalanceItem, TransactionHistoryItem } from '@/lib/types'
 
-import { fetchTransactionHistory } from '../../../lib/api'
+import { fetchTokenBalances, fetchTransactionHistory } from '../../../lib/api'
 import truncateString from '../../../utils'
 import { useWallet } from '../../Hooks/useWallet'
 import PrimaryButton from '../Buttons/PrimaryButton'
 import SecondaryButton from '../Buttons/SecondaryButton'
+import ERC20ItemCard from '../ERC20ItemCard'
 import TransactionStatusCard from '../TransactionStatusCard'
 
 function WalletOpenScreen() {
@@ -21,12 +22,11 @@ function WalletOpenScreen() {
     setWallet: React.Dispatch<React.SetStateAction<ethers.Wallet | undefined>>
     setWalletCreationFinished: React.Dispatch<React.SetStateAction<boolean>>
   }
-  // const [transactionStatus, setTransactionStatus] = useState(0)
   const [transactionHistory, setTransactionHistory] = useState<
     TransactionHistoryItem[]
   >([])
   const [historicDataFetched, setHistoricDataFetched] = useState(false)
-  // const [ERC20Assets, setERC20Assets] = useState<any>()
+  const [ERC20Assets, setERC20Assets] = useState<ERC20BalanceItem[]>()
 
   const yellow_stroke = chrome.runtime.getURL('images/yellow_stroke.svg')
 
@@ -37,15 +37,15 @@ function WalletOpenScreen() {
       setTransactionHistory(txs.reverse())
       console.log('Historical txs: ', txs)
     }
-    // async function getERC20Balances() {
-    //   const balances = await fetchTokenBalances(wallet.address)
-    //   // setERC20Assets(balances)
-    //   console.log('ERC20 Balance: ', balances)
-    //   return balances
-    // }
+    async function getERC20Balances() {
+      const balances = await fetchTokenBalances(wallet.address)
+      setERC20Assets(balances)
+      console.log('ERC20 Balance: ', balances)
+      return balances
+    }
     if (wallet && wallet.provider && !historicDataFetched) {
       getTransactions()
-      // getERC20Balances()
+      getERC20Balances()
       setHistoricDataFetched(true)
     }
   }, [wallet, historicDataFetched])
@@ -163,9 +163,15 @@ function WalletOpenScreen() {
         >
           <span className="p-4 text-3xl">Assets</span>
         </div>
+        <div className="mx-auto mt-4 grid grid-flow-row grid-cols-4 gap-4">
+          {ERC20Assets &&
+            ERC20Assets.map((asset) => {
+              return <ERC20ItemCard ERC20Item={asset} />
+            })}
+        </div>
       </div>
 
-      <div className="grid grid-cols-2">
+      <div className="mt-8 grid grid-cols-2">
         <div className="mt-8">
           <div
             className="-ml-4 w-fit bg-cover bg-no-repeat"
