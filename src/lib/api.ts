@@ -56,70 +56,70 @@ async function fetchTransactionHistory(address: string) {
   return []
 }
 
-// async function sendERC20Token(
-//   contract_address: string,
-//   send_token_amount: string,
-//   to_address: string,
-//   wallet: ethers.Wallet,
-// ) {
-//   const gas_limit = '0x100000'
-//   wallet.provider.getGasPrice().then((currentGasPrice) => {
-//     const gas_price = ethers.utils.hexlify(parseInt(currentGasPrice))
-//     console.log(`gas_price: ${gas_price}`)
-//     const erc20_abi = [
-//       // Some details about the token
-//       'function name() view returns (string)',
-//       'function symbol() view returns (string)',
+async function sendERC20Token(
+  contract_address: string,
+  send_token_amount: string,
+  to_address: string,
+  wallet: ethers.Wallet,
+) {
+  const gas_limit = '0x100000'
+  wallet.provider.getGasPrice().then((currentGasPrice) => {
+    const gas_price = ethers.utils.hexlify(parseInt(currentGasPrice))
+    console.log(`gas_price: ${gas_price}`)
+    const erc20_abi = [
+      // Some details about the token
+      'function name() view returns (string)',
+      'function symbol() view returns (string)',
 
-//       // Get the account balance
-//       'function balanceOf(address) view returns (uint)',
+      // Get the account balance
+      'function balanceOf(address) view returns (uint)',
 
-//       // Send some of your tokens to someone else
-//       'function transfer(address to, uint amount)',
+      // Send some of your tokens to someone else
+      'function transfer(address to, uint amount)',
 
-//       // An event triggered whenever anyone transfers to someone else
-//       'event Transfer(address indexed from, address indexed to, uint amount)',
-//     ]
+      // An event triggered whenever anyone transfers to someone else
+      'event Transfer(address indexed from, address indexed to, uint amount)',
+    ]
 
-//     if (contract_address) {
-//       // general token send
-//       const contract = new ethers.Contract(contract_address, erc20_abi, wallet)
+    if (contract_address) {
+      // general token send
+      const contract = new ethers.Contract(contract_address, erc20_abi, wallet)
 
-//       // How many tokens?
-//       const numberOfTokens = ethers.utils.parseUnits(send_token_amount, 18)
-//       console.log(`numberOfTokens: ${numberOfTokens}`)
+      // How many tokens?
+      const numberOfTokens = ethers.utils.parseUnits(send_token_amount, 18)
+      console.log(`numberOfTokens: ${numberOfTokens}`)
 
-//       // Send tokens
-//       contract.transfer(to_address, numberOfTokens).then((transferResult) => {
-//         console.dir(transferResult)
-//         alert('sent token')
-//       })
-//     } // ether send
-//     else {
-//       const tx = {
-//         from: wallet.address,
-//         to: to_address,
-//         value: ethers.utils.parseEther(send_token_amount),
-//         nonce: wallet.provider.getTransactionCount(wallet.address, 'latest'),
-//         gasLimit: ethers.utils.hexlify(gas_limit), // 100000
-//         gasPrice: gas_price,
-//       }
-//       console.dir(tx)
-//       try {
-//         wallet.sendTransaction(tx).then((transaction) => {
-//           console.dir(transaction)
-//           alert('Send finished!')
-//         })
-//       } catch (error) {
-//         alert('failed to send!!')
-//       }
-//     }
-//   })
-// }
+      // Send tokens
+      contract.transfer(to_address, numberOfTokens).then((transferResult) => {
+        console.dir(transferResult)
+        alert('sent token')
+      })
+    } // ether send
+    else {
+      const tx = {
+        from: wallet.address,
+        to: to_address,
+        value: ethers.utils.parseEther(send_token_amount),
+        nonce: wallet.provider.getTransactionCount(wallet.address, 'latest'),
+        gasLimit: ethers.utils.hexlify(gas_limit), // 100000
+        gasPrice: gas_price,
+      }
+      console.dir(tx)
+      try {
+        wallet.sendTransaction(tx).then((transaction) => {
+          console.dir(transaction)
+          alert('Send finished!')
+        })
+      } catch (error) {
+        alert('failed to send!!')
+      }
+    }
+  })
+}
 
 export {
   fetchTokenBalances,
   fetchNativeTokenBalance,
   fetchTransactionHistory,
-  // sendERC20Token,
+  sendERC20Token,
 }

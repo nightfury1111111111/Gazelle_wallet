@@ -1,16 +1,26 @@
 /* eslint-disable no-console */
-import { BigNumber, ethers } from 'ethers'
+import { ethers } from 'ethers'
 import { useEffect, useState } from 'react'
 
-import { TransactionHistoryItemStatusEnum } from '@/lib/schemas'
-import { ERC20BalanceItem, TransactionHistoryItem } from '@/lib/types'
+import {
+  NativeBalanceItem as NativeBalanceItemSchema,
+  ERC20BalanceItem as ERC20BalanceItemSchema,
+} from '@/lib/schemas'
+import {
+  AbstractBalanceItem,
+  ERC20BalanceItem,
+  NativeBalanceItem,
+  TransactionHistoryItem,
+} from '@/lib/types'
 
 import {
   fetchTokenBalances,
   fetchNativeTokenBalance,
   fetchTransactionHistory,
+  sendERC20Token,
+  // sendERC20Token,
 } from '../../../lib/api'
-import truncateString from '../../../utils'
+import { truncateString } from '../../../utils'
 import { useWallet } from '../../Hooks/useWallet'
 import PrimaryButton from '../Buttons/PrimaryButton'
 import SecondaryButton from '../Buttons/SecondaryButton'
@@ -19,9 +29,8 @@ import SendTokenDropdownMenu from '../SendTokenDropdownMenu'
 import TransactionStatusCard from '../TransactionStatusCard'
 
 function WalletOpenScreen() {
-  const [NativeTokenBalance, setNativeTokenBalance] = useState<BigNumber>(
-    ethers.constants.Zero,
-  )
+  const [nativeBalanceItem, setNativeBalanceItem] =
+    useState<NativeBalanceItem | null>()
   const [transactionAddress, setTransactionAddress] = useState<string>('')
   const [transactionETHAmount, setTransactionETHAmount] = useState<string>('0')
   const { wallet, setWallet, setWalletCreationFinished } = useWallet() as {
@@ -34,8 +43,13 @@ function WalletOpenScreen() {
   >([])
   const [historicDataFetched, setHistoricDataFetched] = useState(false)
   const [ERC20Assets, setERC20Assets] = useState<ERC20BalanceItem[]>()
+  const [selectedToken, setSelectedToken] = useState<
+    AbstractBalanceItem | undefined
+  >(undefined)
 
   const yellow_stroke = chrome.runtime.getURL('images/yellow_stroke.svg')
+  const eth_logo = chrome.runtime.getURL('images/eth_logo.png')
+  const matic_logo = chrome.runtime.getURL('images/matic_logo.png')
 
   useEffect(() => {
     async function getTransactions() {
@@ -52,8 +66,31 @@ function WalletOpenScreen() {
     }
     async function getNativeTokenBalance() {
       const balance = await fetchNativeTokenBalance(wallet.address)
-      setNativeTokenBalance(balance)
-      return balance
+      let balanceItem: NativeBalanceItem
+
+      if (process.env.NODE_ENV == 'development') {
+        balanceItem = {
+          symbol: 'ETH',
+          balance: balance.toString(),
+          decimals: '18',
+          logo: eth_logo,
+          name: 'Ethereum',
+          thumbnail: eth_logo,
+        }
+      } else {
+        balanceItem = {
+          symbol: 'MATIC',
+          balance: balance.toString(),
+          decimals: '18',
+          logo: matic_logo,
+          name: 'MATIC',
+          thumbnail: matic_logo,
+        }
+      }
+      setNativeBalanceItem(balanceItem)
+      if (selectedToken == null) {
+        setSelectedToken(balanceItem)
+      }
     }
     if (wallet && wallet.provider && !historicDataFetched) {
       getTransactions()
@@ -61,7 +98,7 @@ function WalletOpenScreen() {
       getNativeTokenBalance()
       setHistoricDataFetched(true)
     }
-  }, [wallet, historicDataFetched])
+  }, [wallet, historicDataFetched, selectedToken, eth_logo, matic_logo])
 
   // useEffect(() => {
   //   // if (wallet && wallet.provider && !listenerActive) {
@@ -104,43 +141,57 @@ function WalletOpenScreen() {
   //   }
   // }, [wallet, ETHBalance])
 
+  // function sendToken(
+  //   contract_address: string,
+  //   send_token_amount: string,
+  //   to_address: string,
+  // ) {
+  //   sendERC20Token(contract_address, send_token_amount, to_address, wallet)
+  // }
+
   function onSubmitTransaction() {
     // Create a transaction object
     // setTransactionStatus(1)
-    async function getTransactions() {
-      // const currentBlockNumber = await wallet.provider.getBlockNumber()
-      const txs = await fetchTransactionHistory(wallet.address)
-      setTransactionHistory(txs.reverse())
-      console.log('Fetched all transactions.', txs)
-    }
-    const tx = {
-      to: transactionAddress,
-      // Convert currency unit from ether to wei
-      value: ethers.utils.parseEther(transactionETHAmount),
-    }
+    // async function getTransactions() {
+    //   // const currentBlockNumber = await wallet.provider.getBlockNumber()
+    //   const txs = await fetchTransactionHistory(wallet.address)
+    //   setTransactionHistory(txs.reverse())
+    //   console.log('Fetched all transactions.', txs)
+    // }
+    // const tx = {
+    //   to: transactionAddress,
+    //   // Convert currency unit from ether to wei
+    //   value: ethers.utils.parseEther(transactionETHAmount),
+    // }
     // Send a transaction
-    if (wallet) {
-      wallet
-        .sendTransaction(tx)
-        .then(async (txObj) => {
-          // eslint-disable-next-line no-console
-          console.log('txHash', txObj.hash)
-          const pendingTx: TransactionHistoryItem = {
-            hash: txObj.hash,
-            type: 'tbd',
-            status: TransactionHistoryItemStatusEnum.enum.pending,
-            timestamp: Date.now(),
-          }
-          setTransactionHistory([...transactionHistory].concat(pendingTx))
-          wallet.provider.once(txObj.hash, (tx) => {
-            console.log('transaction mined: ', tx)
-            getTransactions() // fetch all Transactions
-          })
-        })
-        .catch((error) => {
-          // set failed transaction
-          console.log(error)
-        })
+    // if (wallet) {
+    //   wallet
+    //     .sendTransaction(tx)
+    //     .then(async (txObj) => {
+    //       // eslint-disable-next-line no-console
+    //       console.log('txHash', txObj.hash)
+    //       const pendingTx: TransactionHistoryItem = {
+    //         hash: txObj.hash,
+    //         type: 'tbd',
+    //         status: TransactionHistoryItemStatusEnum.enum.pending,
+    //         timestamp: Date.now(),
+    //       }
+    //       setTransactionHistory([...transactionHistory].concat(pendingTx))
+    //       wallet.provider.once(txObj.hash, (tx) => {
+    //         console.log('transaction mined: ', tx)
+    //         getTransactions() // fetch all Transactions
+    //       })
+    //     })
+    //     .catch((error) => {
+    //       // set failed transaction
+    //       console.log(error)
+    //     })
+    // }
+
+    if (NativeBalanceItemSchema.parse(selectedToken)) {
+      sendERC20Token(selectedToken)
+      console.log('asdasd')
+    } else if (ERC20BalanceItemSchema.parse(selectedToken)) {
     }
   }
 
@@ -163,7 +214,11 @@ function WalletOpenScreen() {
         <div className="">
           <div className="text-2xl font-bold">Native Token Balance</div>
           <div className="text-xl">
-            {ethers.utils.formatEther(NativeTokenBalance)}
+            {nativeBalanceItem &&
+              ethers.utils.formatUnits(
+                nativeBalanceItem?.balance,
+                nativeBalanceItem?.decimals,
+              )}
           </div>
         </div>
         <div className="flex flex-col justify-center">
@@ -206,8 +261,12 @@ function WalletOpenScreen() {
                 Token
               </label>
               <div className="mt-1">
-                {ERC20Assets && (
-                  <SendTokenDropdownMenu ERC20Tokens={ERC20Assets} />
+                {ERC20Assets && selectedToken && (
+                  <SendTokenDropdownMenu
+                    balanceItems={[...ERC20Assets, nativeBalanceItem!]}
+                    selectedToken={selectedToken!}
+                    setSelectedToken={setSelectedToken}
+                  />
                 )}
               </div>
             </div>

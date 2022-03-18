@@ -23,8 +23,21 @@ const ERC20BalanceItem = z.object({
   token_address: z.string(),
 })
 
+const NativeBalanceItem = z.object({
+  balance: z.string(),
+  decimals: z.string(),
+  logo: z.string(),
+  name: z.string(),
+  symbol: z.string(),
+  thumbnail: z.string(),
+})
+
+const AbstractBalanceItem = z.union([NativeBalanceItem, ERC20BalanceItem])
+
 export {
   TransactionHistoryItem,
   TransactionHistoryItemStatusEnum,
   ERC20BalanceItem,
+  NativeBalanceItem,
+  AbstractBalanceItem,
 }

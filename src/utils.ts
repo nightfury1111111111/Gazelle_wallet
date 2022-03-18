@@ -14,7 +14,7 @@ function truncateString(str: string, length: number, ending: string) {
   }
 }
 
-export async function getHistory(
+async function getHistory(
   provider: ethers.providers.Provider,
   addressOrName: string | Promise<string>,
   startBlock?: ethers.providers.BlockTag,
@@ -37,4 +37,4 @@ export async function getHistory(
   return transactions
 }
 
-export default truncateString
+export { truncateString, getHistory }
