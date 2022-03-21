@@ -2,10 +2,10 @@
 import { ethers } from 'ethers'
 import { useEffect, useState } from 'react'
 
-import {
-  NativeBalanceItem as NativeBalanceItemSchema,
-  ERC20BalanceItem as ERC20BalanceItemSchema,
-} from '@/lib/schemas'
+// import {
+//   NativeBalanceItem as NativeBalanceItemSchema,
+//   ERC20BalanceItem as ERC20BalanceItemSchema,
+// } from '@/lib/schemas'
 import {
   AbstractBalanceItem,
   ERC20BalanceItem,
@@ -18,6 +18,7 @@ import {
   fetchNativeTokenBalance,
   fetchTransactionHistory,
   sendERC20Token,
+  sendNativeToken,
   // sendERC20Token,
 } from '../../../lib/api'
 import { truncateString } from '../../../utils'
@@ -31,8 +32,6 @@ import TransactionStatusCard from '../TransactionStatusCard'
 function WalletOpenScreen() {
   const [nativeBalanceItem, setNativeBalanceItem] =
     useState<NativeBalanceItem | null>()
-  const [transactionAddress, setTransactionAddress] = useState<string>('')
-  const [transactionETHAmount, setTransactionETHAmount] = useState<string>('0')
   const { wallet, setWallet, setWalletCreationFinished } = useWallet() as {
     wallet: ethers.Wallet
     setWallet: React.Dispatch<React.SetStateAction<ethers.Wallet | undefined>>
@@ -46,6 +45,9 @@ function WalletOpenScreen() {
   const [selectedToken, setSelectedToken] = useState<
     AbstractBalanceItem | undefined
   >(undefined)
+  const [sendTokenAmount, setSendTokenAmount] = useState<string>('0')
+  const [sendTokenReceiverAddress, setSendTokenReceiverAddress] =
+    useState<string>('')
 
   const yellow_stroke = chrome.runtime.getURL('images/yellow_stroke.svg')
   const eth_logo = chrome.runtime.getURL('images/eth_logo.png')
@@ -188,10 +190,18 @@ function WalletOpenScreen() {
     //     })
     // }
 
-    if (NativeBalanceItemSchema.parse(selectedToken)) {
-      sendERC20Token(selectedToken)
-      console.log('asdasd')
-    } else if (ERC20BalanceItemSchema.parse(selectedToken)) {
+    if (selectedToken && 'token_address' in selectedToken) {
+      sendERC20Token(
+        selectedToken.token_address,
+        sendTokenAmount,
+        selectedToken.decimals,
+        sendTokenReceiverAddress,
+        wallet,
+      )
+      console.log('ERC 20 Token sent')
+    } else {
+      sendNativeToken(sendTokenAmount, sendTokenReceiverAddress, wallet)
+      console.log('Native Token sent')
     }
   }
 
@@ -284,7 +294,7 @@ function WalletOpenScreen() {
                   type="text"
                   required
                   className="block w-full appearance-none rounded-md border border-gray-300 px-3 py-2 placeholder-gray-400 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
-                  onChange={(e) => setTransactionAddress(e.target.value)}
+                  onChange={(e) => setSendTokenReceiverAddress(e.target.value)}
                 />
               </div>
             </div>
@@ -302,7 +312,7 @@ function WalletOpenScreen() {
                   type="text"
                   required
                   className="block w-full appearance-none rounded-md border border-gray-300 px-3 py-2 placeholder-gray-400 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
-                  onChange={(e) => setTransactionETHAmount(e.target.value)}
+                  onChange={(e) => setSendTokenAmount(e.target.value)}
                 />
               </div>
             </div>

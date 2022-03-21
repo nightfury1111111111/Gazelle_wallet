@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import { ethers } from 'ethers'
 import Moralis from 'moralis'
 
@@ -56,64 +57,62 @@ async function fetchTransactionHistory(address: string) {
   return []
 }
 
-async function sendERC20Token(
-  contract_address: string,
+async function sendNativeToken(
   send_token_amount: string,
   to_address: string,
   wallet: ethers.Wallet,
 ) {
-  const gas_limit = '0x100000'
-  wallet.provider.getGasPrice().then((currentGasPrice) => {
-    const gas_price = ethers.utils.hexlify(parseInt(currentGasPrice))
-    console.log(`gas_price: ${gas_price}`)
-    const erc20_abi = [
-      // Some details about the token
-      'function name() view returns (string)',
-      'function symbol() view returns (string)',
+  const tx = {
+    from: wallet.address,
+    to: to_address,
+    value: ethers.utils.parseEther(send_token_amount),
+    nonce: wallet.provider.getTransactionCount(wallet.address, 'latest'),
+  }
+  console.dir(tx)
+  try {
+    wallet.sendTransaction(tx).then((transaction) => {
+      console.dir(transaction)
+      alert('Submitted Transfer Transaction')
+    })
+  } catch (error) {
+    alert('failed to send!!')
+  }
+}
 
-      // Get the account balance
-      'function balanceOf(address) view returns (uint)',
+async function sendERC20Token(
+  contract_address: string,
+  send_token_amount: string,
+  decimals: string,
+  to_address: string,
+  wallet: ethers.Wallet,
+) {
+  // const gas_limit = '0x200000'
+  const erc20_abi = [
+    // Some details about the token
+    'function name() view returns (string)',
+    'function symbol() view returns (string)',
 
-      // Send some of your tokens to someone else
-      'function transfer(address to, uint amount)',
+    // Get the account balance
+    'function balanceOf(address) view returns (uint)',
 
-      // An event triggered whenever anyone transfers to someone else
-      'event Transfer(address indexed from, address indexed to, uint amount)',
-    ]
+    // Send some of your tokens to someone else
+    'function transfer(address to, uint amount)',
 
-    if (contract_address) {
-      // general token send
-      const contract = new ethers.Contract(contract_address, erc20_abi, wallet)
+    // An event triggered whenever anyone transfers to someone else
+    'event Transfer(address indexed from, address indexed to, uint amount)',
+  ]
 
-      // How many tokens?
-      const numberOfTokens = ethers.utils.parseUnits(send_token_amount, 18)
-      console.log(`numberOfTokens: ${numberOfTokens}`)
+  // general token send
+  const contract = new ethers.Contract(contract_address, erc20_abi, wallet)
 
-      // Send tokens
-      contract.transfer(to_address, numberOfTokens).then((transferResult) => {
-        console.dir(transferResult)
-        alert('sent token')
-      })
-    } // ether send
-    else {
-      const tx = {
-        from: wallet.address,
-        to: to_address,
-        value: ethers.utils.parseEther(send_token_amount),
-        nonce: wallet.provider.getTransactionCount(wallet.address, 'latest'),
-        gasLimit: ethers.utils.hexlify(gas_limit), // 100000
-        gasPrice: gas_price,
-      }
-      console.dir(tx)
-      try {
-        wallet.sendTransaction(tx).then((transaction) => {
-          console.dir(transaction)
-          alert('Send finished!')
-        })
-      } catch (error) {
-        alert('failed to send!!')
-      }
-    }
+  // How many tokens?
+  const numberOfTokens = ethers.utils.parseUnits(send_token_amount, decimals)
+  // console.log(`numberOfTokens: ${numberOfTokens}`)
+
+  // Send tokens
+  contract.transfer(to_address, numberOfTokens).then(() => {
+    // console.dir(transferResult)
+    alert('Submitted ERC20 Transfer Transaction')
   })
 }
 
@@ -122,4 +121,5 @@ export {
   fetchNativeTokenBalance,
   fetchTransactionHistory,
   sendERC20Token,
+  sendNativeToken,
 }
