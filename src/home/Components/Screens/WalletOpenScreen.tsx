@@ -110,7 +110,36 @@ function WalletOpenScreen() {
         wallet,
       ).then((tx) => {
         const updatedTxHistory = [tx, ...transactionHistory]
+        console.log('new added tx: ', tx.hash)
+        console.log('Num transactions in history: ', transactionHistory.length)
         setTransactionHistory(updatedTxHistory)
+        wallet.provider.once(tx.hash, () => {
+          // Emitted when the transaction has been mined
+          // Change status of pending transaction to confirmed
+          // console.log(
+          //   'Num transactions in history: ',
+          //   transactionHistory.length,
+          // )
+          // console.log('trasnaction mined', transaction)
+          // setTransactionHistory(
+          //   transactionHistory.map((elm) => {
+          //     console.log(elm.hash)
+          //     if (elm.hash === transaction.transactionHash) {
+          //       console.log(elm)
+          //       console.log(transaction)
+          //       return {
+          //         ...elm,
+          //         status: TransactionHistoryItemStatusEnum.enum.confirmed,
+          //       }
+          //     } else {
+          //       return elm
+          //     }
+          //   }),
+          // )
+          fetchTransactionHistory(wallet.address).then((txs) =>
+            setTransactionHistory(txs.reverse()),
+          )
+        })
       })
       console.log('ERC 20 Token sent')
     } else {
@@ -118,6 +147,11 @@ function WalletOpenScreen() {
         (tx) => {
           const updatedTxHistory = [tx, ...transactionHistory]
           setTransactionHistory(updatedTxHistory)
+          wallet.provider.once(tx.hash, () => {
+            fetchTransactionHistory(wallet.address).then((txs) =>
+              setTransactionHistory(txs.reverse()),
+            )
+          })
         },
       )
       console.log('Native Token sent')
