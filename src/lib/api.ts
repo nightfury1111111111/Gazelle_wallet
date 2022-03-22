@@ -35,6 +35,13 @@ async function fetchNativeTokenBalance(address: string) {
 }
 
 async function fetchTransactionHistory(address: string) {
+  const NativeTokenTransfers = await fetchNativeTokenTransactionHistory(address)
+  const ERC20TokenTransfers = await fetchERC20TokenTransactionHistory(address)
+
+  return NativeTokenTransfers.concat(ERC20TokenTransfers)
+}
+
+async function fetchNativeTokenTransactionHistory(address: string) {
   const options = {
     chain: process.env.MORALIS_CHAIN_NAME,
     address: address,
@@ -48,7 +55,31 @@ async function fetchTransactionHistory(address: string) {
       (tr) => ({
         hash: tr.hash,
         status: TransactionHistoryItemStatusEnum.enum.confirmed,
-        type: 'tbd',
+        type: 'Native Transfer',
+        timestamp: Date.parse(tr.block_timestamp),
+      }),
+    )
+    return transactionsOut
+  }
+  return []
+}
+
+async function fetchERC20TokenTransactionHistory(address: string) {
+  const options = {
+    chain: process.env.MORALIS_CHAIN_NAME,
+    address: address,
+  }
+
+  const apiResponse = await Moralis.Web3API.account.getTokenTransfers(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    options as any,
+  )
+  if (apiResponse) {
+    const transactionsOut: TransactionHistoryItem[] = apiResponse.result!.map(
+      (tr) => ({
+        hash: tr.transaction_hash,
+        status: TransactionHistoryItemStatusEnum.enum.confirmed,
+        type: 'ERC 20 Transfer',
         timestamp: Date.parse(tr.block_timestamp),
       }),
     )
