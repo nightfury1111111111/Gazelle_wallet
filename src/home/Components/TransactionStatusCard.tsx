@@ -106,7 +106,7 @@ function TransactionStatusCard({
       onClick={onClick}
     >
       <div className="flex flex-col justify-center">
-        <TransactionIcon></TransactionIcon>
+        <TransactionIcon />
       </div>
 
       <div className="grid grid-cols-3">

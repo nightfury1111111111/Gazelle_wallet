@@ -58,12 +58,10 @@ function WalletOpenScreen() {
       // const currentBlockNumber = await wallet.provider.getBlockNumber()
       const txs = await fetchTransactionHistory(wallet.address)
       setTransactionHistory(txs.reverse())
-      console.log('Historical txs: ', txs)
     }
     async function getERC20Balances() {
       const balances = await fetchTokenBalances(wallet.address)
       setERC20Assets(balances)
-      console.log('ERC20 Balance: ', balances)
       return balances
     }
     async function getNativeTokenBalance() {
@@ -102,94 +100,7 @@ function WalletOpenScreen() {
     }
   }, [wallet, historicDataFetched, selectedToken, eth_logo, matic_logo])
 
-  // useEffect(() => {
-  //   // if (wallet && wallet.provider && !listenerActive) {
-  //   if (wallet && wallet.provider) {
-  //     // setListenerActive(true)
-  //     console.log('Register new listener')
-  //     wallet.provider.on('block', (blockNumber) => {
-  //       console.log('New block was minted!', blockNumber)
-  //       console.log(wallet.provider)
-  //       wallet.provider
-  //         .getBalance(wallet.address)
-  //         .then((balance) => {
-  //           // console.log(balance.toString())
-  //           // console.log(ETHBalance.toString())
-  //           if (!balance.eq(ETHBalance)) {
-  //             setETHBalance(balance)
-  //             console.log('Set new Balance')
-  //           }
-  //         })
-  //         // eslint-disable-next-line no-console
-  //         .catch(console.error)
-
-  // wallet.provider.getBlockWithTransactions(blockNumber).then((block) => {
-  //   const txs: ethers.providers.TransactionResponse[] = []
-  //   // block.transactions.forEach((tx) => {
-  //   for (const tx of block.transactions) {
-  //     // console.log('New minted tx:', tx)
-  //     if (tx.to === wallet.address || tx.from === wallet.address) {
-  //       txs.push({
-  //         ...tx,
-  //         timestamp: block.timestamp,
-  //       })
-  //     }
-  //   }
-  // })
-  //     })
-  //   }
-  //   return () => {
-  //     wallet.provider.removeAllListeners('block')
-  //   }
-  // }, [wallet, ETHBalance])
-
-  // function sendToken(
-  //   contract_address: string,
-  //   send_token_amount: string,
-  //   to_address: string,
-  // ) {
-  //   sendERC20Token(contract_address, send_token_amount, to_address, wallet)
-  // }
-
   function onSubmitTransaction() {
-    // Create a transaction object
-    // setTransactionStatus(1)
-    // async function getTransactions() {
-    //   // const currentBlockNumber = await wallet.provider.getBlockNumber()
-    //   const txs = await fetchTransactionHistory(wallet.address)
-    //   setTransactionHistory(txs.reverse())
-    //   console.log('Fetched all transactions.', txs)
-    // }
-    // const tx = {
-    //   to: transactionAddress,
-    //   // Convert currency unit from ether to wei
-    //   value: ethers.utils.parseEther(transactionETHAmount),
-    // }
-    // Send a transaction
-    // if (wallet) {
-    //   wallet
-    //     .sendTransaction(tx)
-    //     .then(async (txObj) => {
-    //       // eslint-disable-next-line no-console
-    //       console.log('txHash', txObj.hash)
-    //       const pendingTx: TransactionHistoryItem = {
-    //         hash: txObj.hash,
-    //         type: 'tbd',
-    //         status: TransactionHistoryItemStatusEnum.enum.pending,
-    //         timestamp: Date.now(),
-    //       }
-    //       setTransactionHistory([...transactionHistory].concat(pendingTx))
-    //       wallet.provider.once(txObj.hash, (tx) => {
-    //         console.log('transaction mined: ', tx)
-    //         getTransactions() // fetch all Transactions
-    //       })
-    //     })
-    //     .catch((error) => {
-    //       // set failed transaction
-    //       console.log(error)
-    //     })
-    // }
-
     if (selectedToken && 'token_address' in selectedToken) {
       sendERC20Token(
         selectedToken.token_address,
@@ -197,10 +108,18 @@ function WalletOpenScreen() {
         selectedToken.decimals,
         sendTokenReceiverAddress,
         wallet,
-      )
+      ).then((tx) => {
+        const updatedTxHistory = [tx, ...transactionHistory]
+        setTransactionHistory(updatedTxHistory)
+      })
       console.log('ERC 20 Token sent')
     } else {
-      sendNativeToken(sendTokenAmount, sendTokenReceiverAddress, wallet)
+      sendNativeToken(sendTokenAmount, sendTokenReceiverAddress, wallet).then(
+        (tx) => {
+          const updatedTxHistory = [tx, ...transactionHistory]
+          setTransactionHistory(updatedTxHistory)
+        },
+      )
       console.log('Native Token sent')
     }
   }
@@ -335,20 +254,16 @@ function WalletOpenScreen() {
 
           <div className="grid-col1 mt-4 grid space-y-2">
             {transactionHistory &&
-              transactionHistory
-                .slice(0)
-                .reverse()
-                .map((tx) => {
-                  console.log(tx.status)
-                  return (
-                    <TransactionStatusCard
-                      key={tx.hash}
-                      transactionType="Send ETH"
-                      transactionDate={new Date(tx.timestamp)}
-                      transactionStatus={tx.status}
-                    />
-                  )
-                })}
+              transactionHistory.map((tx) => {
+                return (
+                  <TransactionStatusCard
+                    key={tx.hash}
+                    transactionType={tx.type}
+                    transactionDate={new Date(tx.timestamp)}
+                    transactionStatus={tx.status}
+                  />
+                )
+              })}
           </div>
         </div>
       </div>

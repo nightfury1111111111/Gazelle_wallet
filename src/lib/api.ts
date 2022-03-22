@@ -1,5 +1,5 @@
 /* eslint-disable no-console */
-import { ethers } from 'ethers'
+import { ethers, Transaction } from 'ethers'
 import Moralis from 'moralis'
 
 import { TransactionHistoryItemStatusEnum } from './schemas'
@@ -35,13 +35,28 @@ async function fetchNativeTokenBalance(address: string) {
 }
 
 async function fetchTransactionHistory(address: string) {
-  const NativeTokenTransfers = await fetchNativeTokenTransactionHistory(address)
+  const allTransactions = await fetchAllTransactions(address)
   const ERC20TokenTransfers = await fetchERC20TokenTransactionHistory(address)
 
-  return NativeTokenTransfers.concat(ERC20TokenTransfers)
+  // filter out all transactions in NativeTrokenTransfers which are also in ERC20
+  const NativeTokenTransfers = allTransactions.filter((item) => {
+    return ERC20TokenTransfers.findIndex((i) => i.hash === item.hash) === -1
+  })
+
+  const allTransfers = NativeTokenTransfers.concat(ERC20TokenTransfers)
+  allTransfers.sort((a, b) => {
+    if (a.timestamp > b.timestamp) {
+      return 1
+    } else if (a.timestamp === b.timestamp) {
+      return 0
+    } else {
+      return -1
+    }
+  })
+  return allTransfers
 }
 
-async function fetchNativeTokenTransactionHistory(address: string) {
+async function fetchAllTransactions(address: string) {
   const options = {
     chain: process.env.MORALIS_CHAIN_NAME,
     address: address,
@@ -51,6 +66,8 @@ async function fetchNativeTokenTransactionHistory(address: string) {
     options as any,
   )
   if (apiResponse) {
+    console.log('api result')
+    console.log(apiResponse.result)
     const transactionsOut: TransactionHistoryItem[] = apiResponse.result!.map(
       (tr) => ({
         hash: tr.hash,
@@ -93,19 +110,24 @@ async function sendNativeToken(
   to_address: string,
   wallet: ethers.Wallet,
 ) {
-  const tx = {
+  const txSend = {
     from: wallet.address,
     to: to_address,
     value: ethers.utils.parseEther(send_token_amount),
     nonce: wallet.provider.getTransactionCount(wallet.address, 'latest'),
   }
-  console.dir(tx)
   try {
-    wallet.sendTransaction(tx).then((transaction) => {
-      console.dir(transaction)
-      alert('Submitted Transfer Transaction')
-    })
+    const transactionResponse = await wallet.sendTransaction(txSend)
+    const txReturn = {
+      hash: transactionResponse.hash,
+      status: TransactionHistoryItemStatusEnum.enum.pending,
+      type: 'Native Transfer',
+      timestamp: Date.now(),
+    }
+    // alert('Submitted Transfer Transaction')
+    return txReturn
   } catch (error) {
+    console.log(error)
     alert('failed to send!!')
   }
 }
@@ -138,13 +160,26 @@ async function sendERC20Token(
 
   // How many tokens?
   const numberOfTokens = ethers.utils.parseUnits(send_token_amount, decimals)
-  // console.log(`numberOfTokens: ${numberOfTokens}`)
 
   // Send tokens
-  contract.transfer(to_address, numberOfTokens).then(() => {
-    // console.dir(transferResult)
-    alert('Submitted ERC20 Transfer Transaction')
-  })
+
+  try {
+    const transaction: Transaction = await contract.transfer(
+      to_address,
+      numberOfTokens,
+    )
+    // alert('Submitted ERC20 Transfer Transaction')
+
+    const tx = {
+      hash: transaction.hash!,
+      status: TransactionHistoryItemStatusEnum.enum.pending,
+      type: 'ERC20 Transfer',
+      timestamp: Date.now(),
+    }
+    return tx
+  } catch {
+    throw Error('Transaction failed')
+  }
 }
 
 export {
